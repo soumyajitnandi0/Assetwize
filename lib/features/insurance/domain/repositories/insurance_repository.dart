@@ -14,4 +14,8 @@ abstract class InsuranceRepository {
   /// Adds or updates an insurance policy
   /// Saves to persistent local storage
   Future<void> addInsurance(Insurance insurance);
+
+  /// Clears all insurance data
+  /// Used for logout functionality
+  Future<void> clearAll();
 }

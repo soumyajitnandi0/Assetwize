@@ -18,12 +18,14 @@ class WelcomePage extends StatefulWidget {
 class _WelcomePageState extends State<WelcomePage> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
+  final _phoneController = TextEditingController();
   final _userPreferencesService = UserPreferencesService();
   bool _isLoading = false;
 
   @override
   void dispose() {
     _nameController.dispose();
+    _phoneController.dispose();
     super.dispose();
   }
 
@@ -38,11 +40,14 @@ class _WelcomePageState extends State<WelcomePage> {
 
     try {
       final name = _nameController.text.trim();
-      final success = await _userPreferencesService.saveUserName(name);
+      final phone = _phoneController.text.trim();
+
+      final nameSuccess = await _userPreferencesService.saveUserName(name);
+      final phoneSuccess = await _userPreferencesService.savePhoneNumber(phone);
 
       if (!mounted) return;
 
-      if (success) {
+      if (nameSuccess && phoneSuccess) {
         // Mark first launch as complete
         await _userPreferencesService.setFirstLaunchComplete();
 
@@ -54,7 +59,7 @@ class _WelcomePageState extends State<WelcomePage> {
         // Show error message
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Failed to save your name. Please try again.'),
+            content: Text('Failed to save your information. Please try again.'),
             backgroundColor: AppTheme.errorColor,
           ),
         );
@@ -112,7 +117,7 @@ class _WelcomePageState extends State<WelcomePage> {
 
                 // Subtitle
                 Text(
-                  'Let\'s get started by entering your name',
+                  'Let\'s get started by entering your details',
                   style: GoogleFonts.montserrat(
                     fontSize: 16,
                     fontWeight: FontWeight.w400,
@@ -162,6 +167,46 @@ class _WelcomePageState extends State<WelcomePage> {
                     value,
                     fieldName: 'Name',
                   ),
+                  textInputAction: TextInputAction.next,
+                ),
+                const SizedBox(height: AppConstants.spacingM),
+
+                // Phone Number Input Field
+                TextFormField(
+                  controller: _phoneController,
+                  decoration: InputDecoration(
+                    labelText: 'Phone Number',
+                    hintText: 'Enter your phone number',
+                    prefixIcon: const Icon(Icons.phone_outlined),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AppConstants.radiusM),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AppConstants.radiusM),
+                      borderSide: const BorderSide(color: AppTheme.borderColor),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AppConstants.radiusM),
+                      borderSide: const BorderSide(
+                        color: AppTheme.primaryGreen,
+                        width: 2,
+                      ),
+                    ),
+                    errorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AppConstants.radiusM),
+                      borderSide: const BorderSide(color: AppTheme.errorColor),
+                    ),
+                    focusedErrorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AppConstants.radiusM),
+                      borderSide: const BorderSide(
+                        color: AppTheme.errorColor,
+                        width: 2,
+                      ),
+                    ),
+                  ),
+                  style: GoogleFonts.montserrat(),
+                  keyboardType: TextInputType.phone,
+                  validator: (value) => Validators.phoneNumber(value),
                   onFieldSubmitted: (_) => _handleContinue(),
                 ),
                 const SizedBox(height: AppConstants.spacingXL),

@@ -27,11 +27,13 @@ class AppTheme {
   static const Color warningColor = Color(0xFFF57C00); // Orange for warnings
 
   static ThemeData get lightTheme {
+    // Get Montserrat font with fallback to system font if loading fails
     final montserrat = GoogleFonts.montserrat();
+    final fontFamily = montserrat.fontFamily ?? 'Roboto'; // Fallback to Roboto
 
     return ThemeData(
       useMaterial3: true,
-      fontFamily: GoogleFonts.montserrat().fontFamily,
+      fontFamily: fontFamily,
       colorScheme: ColorScheme.fromSeed(
         seedColor: primaryGreen,
         primary: primaryGreen,

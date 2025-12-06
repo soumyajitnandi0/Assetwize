@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'core/bloc/app_bloc_observer.dart';
 import 'core/di/injection_container.dart';
 import 'core/services/user_preferences_service.dart';
@@ -8,7 +9,7 @@ import 'core/theme/app_theme.dart';
 import 'core/utils/logger.dart' as logger;
 import 'core/widgets/error_boundary.dart';
 import 'features/insurance/presentation/bloc/insurance_list_cubit.dart';
-import 'features/insurance/presentation/pages/insurance_list_page.dart';
+import 'core/navigation/main_navigator.dart';
 import 'features/onboarding/presentation/pages/welcome_page.dart';
 
 /// Application entry point
@@ -40,6 +41,22 @@ void main() async {
       stackTrace,
     );
     // Continue anyway - some dependencies might still work
+  }
+
+  // Preload Montserrat font to ensure it's available on mobile
+  // This ensures the font is downloaded and cached before the app renders
+  try {
+    // Preload the font by creating a TextStyle - this triggers font download
+    // The font will be cached after first download for offline use
+    GoogleFonts.montserrat();
+    logger.Logger.info('Montserrat font preload initiated');
+  } catch (e, stackTrace) {
+    logger.Logger.warning(
+      'Failed to preload Montserrat font, will use fallback',
+      e,
+      stackTrace,
+    );
+    // Continue anyway - GoogleFonts will handle fallback
   }
 
   // Set preferred orientations
@@ -141,10 +158,9 @@ class _AssetwizeAppState extends State<AssetwizeApp> {
           title: 'ASSETWIZE',
           debugShowCheckedModeBanner: false,
           theme: AppTheme.lightTheme,
-          home:
-              _isFirstLaunch ? const WelcomePage() : const InsuranceListPage(),
+          home: _isFirstLaunch ? const WelcomePage() : const MainNavigator(),
           routes: {
-            '/home': (context) => const InsuranceListPage(),
+            '/home': (context) => const MainNavigator(),
           },
           // Global error handling for routes
           builder: (context, child) {

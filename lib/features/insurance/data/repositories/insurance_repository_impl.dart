@@ -105,4 +105,18 @@ class InsuranceRepositoryImpl implements InsuranceRepository {
       throw Exception('Failed to save insurance: ${e.toString()}');
     }
   }
+
+  @override
+  Future<void> clearAll() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final success = await prefs.remove(_storageKey);
+      
+      if (!success) {
+        throw Exception('Failed to clear insurance data');
+      }
+    } catch (e) {
+      throw Exception('Failed to clear insurance data: ${e.toString()}');
+    }
+  }
 }

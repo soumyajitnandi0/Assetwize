@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -52,7 +51,6 @@ class _InsuranceListPageState extends State<InsuranceListPage> {
           ),
         ],
       ),
-      bottomNavigationBar: const _BottomNavBar(),
     );
   }
 
@@ -226,114 +224,6 @@ class _ContentView extends StatelessWidget {
         content: Text('Ask Assistant about $title'),
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 2),
-      ),
-    );
-  }
-}
-
-/// Bottom navigation bar component
-class _BottomNavBar extends StatelessWidget {
-  const _BottomNavBar();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: const SafeArea(
-        child: SizedBox(
-          height: 65,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _NavItem(
-                icon: Icons.home_outlined,
-                activeIcon: Icons.home,
-                label: 'Home',
-                isActive: true,
-              ),
-              _NavItem(
-                icon: Icons.favorite_border,
-                activeIcon: Icons.favorite,
-                label: 'Favourites',
-                isActive: false,
-              ),
-              _NavItem(
-                icon: Icons.search_outlined,
-                activeIcon: Icons.search,
-                label: 'Search',
-                isActive: false,
-              ),
-              _NavItem(
-                icon: Icons.settings_outlined,
-                activeIcon: Icons.settings,
-                label: 'Settings',
-                isActive: false,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Individual navigation item
-/// Thin-line style icons with labels below
-class _NavItem extends StatelessWidget {
-  final IconData icon;
-  final IconData activeIcon;
-  final String label;
-  final bool isActive;
-
-  const _NavItem({
-    required this.icon,
-    required this.activeIcon,
-    required this.label,
-    required this.isActive,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () {
-            debugPrint('Nav item tapped: $label');
-          },
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                isActive ? activeIcon : icon,
-                color:
-                    isActive ? AppTheme.primaryGreen : AppTheme.textSecondary,
-                size: 24,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                label,
-                style: GoogleFonts.montserrat(
-                  fontSize: 11,
-                  fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
-                  color:
-                      isActive ? AppTheme.primaryGreen : AppTheme.textSecondary,
-                  letterSpacing: -0.2,
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }
