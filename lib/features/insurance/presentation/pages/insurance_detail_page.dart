@@ -88,24 +88,7 @@ class _InsuranceDetailPageState extends State<InsuranceDetailPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Full-width image
-          CachedNetworkImage(
-            imageUrl: insurance.imageUrl,
-            width: double.infinity,
-            height: 300,
-            fit: BoxFit.cover,
-            placeholder: (context, url) => Container(
-              height: 300,
-              color: AppTheme.backgroundLight,
-              child: const Center(
-                child: CircularProgressIndicator(),
-              ),
-            ),
-            errorWidget: (context, url, error) => Container(
-              height: 300,
-              color: AppTheme.backgroundLight,
-              child: const Icon(Icons.error_outline),
-            ),
-          ),
+          _buildImage(insurance.imageUrl),
           // Content
           Padding(
             padding: const EdgeInsets.all(AppConstants.spacingL),
@@ -299,5 +282,76 @@ class _InsuranceDetailPageState extends State<InsuranceDetailPage> {
         ),
       ],
     );
+  }
+
+  /// Builds the image widget, handling both asset and network images
+  Widget _buildImage(String imageUrl) {
+    // Check if it's a local asset path or network URL
+    if (imageUrl.startsWith('assets/')) {
+      return Image.asset(
+        imageUrl,
+        width: double.infinity,
+        height: 300,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          // Log the error for debugging
+          debugPrint('Failed to load asset: $imageUrl');
+          debugPrint('Error: $error');
+          return Container(
+            height: 300,
+            color: AppTheme.backgroundLight,
+            child: const Center(
+              child: Icon(
+                Icons.image_not_supported_outlined,
+                size: 48,
+                color: AppTheme.textSecondary,
+              ),
+            ),
+          );
+        },
+        // Add a placeholder while loading
+        frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+          if (wasSynchronouslyLoaded || frame != null) {
+            return child;
+          }
+          return Container(
+            height: 300,
+            color: AppTheme.backgroundLight,
+            child: const Center(
+              child: CircularProgressIndicator(
+                color: AppTheme.primaryGreen,
+              ),
+            ),
+          );
+        },
+      );
+    } else {
+      return CachedNetworkImage(
+        imageUrl: imageUrl,
+        width: double.infinity,
+        height: 300,
+        fit: BoxFit.cover,
+        placeholder: (context, url) => Container(
+          height: 300,
+          color: AppTheme.backgroundLight,
+          child: const Center(
+            child: CircularProgressIndicator(
+              color: AppTheme.primaryGreen,
+            ),
+          ),
+        ),
+        errorWidget: (context, url, error) => Container(
+          height: 300,
+          color: AppTheme.backgroundLight,
+          child: const Center(
+            child: Icon(
+              Icons.error_outline,
+              size: 48,
+              color: AppTheme.textSecondary,
+            ),
+          ),
+        ),
+      );
+    }
   }
 }

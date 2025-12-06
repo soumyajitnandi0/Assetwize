@@ -25,25 +25,22 @@ class RoundedTabBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       height: 70,
-      child: Padding(
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(
           horizontal: AppConstants.spacingL,
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: List.generate(tabs.length, (index) {
-            final tab = tabs[index];
-            final isSelected = index == selectedIndex;
+        itemCount: tabs.length,
+        itemBuilder: (context, index) {
+          final tab = tabs[index];
+          final isSelected = index == selectedIndex;
 
-            return Expanded(
-              child: _TabButton(
-                tab: tab,
-                isSelected: isSelected,
-                onTap: () => onTabSelected(index),
-              ),
-            );
-          }),
-        ),
+          return _TabButton(
+            tab: tab,
+            isSelected: isSelected,
+            onTap: () => onTabSelected(index),
+          );
+        },
       ),
     );
   }
@@ -67,6 +64,7 @@ class _TabButton extends StatelessWidget {
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(
+          horizontal: AppConstants.spacingM,
           vertical: AppConstants.spacingS,
         ),
         decoration: BoxDecoration(

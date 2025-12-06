@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../core/di/injection_container.dart';
+import '../../features/insurance/presentation/bloc/search_cubit.dart';
 import '../../features/insurance/presentation/pages/insurance_list_page.dart';
+import '../../features/insurance/presentation/pages/search_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
 import '../theme/app_theme.dart';
 
@@ -17,7 +21,10 @@ class _MainNavigatorState extends State<MainNavigator> {
 
   late final List<Widget> _pages = [
     const InsuranceListPage(),
-    const _PlaceholderPage(title: 'Search'),
+    BlocProvider(
+      create: (_) => sl<SearchCubit>(),
+      child: const SearchPage(),
+    ),
     const _PlaceholderPage(title: 'Favourites'),
     const ProfilePage(),
   ];

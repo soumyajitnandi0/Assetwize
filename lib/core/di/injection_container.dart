@@ -4,9 +4,11 @@ import '../../features/insurance/domain/repositories/insurance_repository.dart';
 import '../../features/insurance/domain/usecases/add_insurance.dart';
 import '../../features/insurance/domain/usecases/get_insurance_detail.dart';
 import '../../features/insurance/domain/usecases/get_insurances.dart';
+import '../../features/insurance/domain/usecases/search_insurances.dart';
 import '../../features/insurance/presentation/bloc/insurance_detail_cubit.dart';
 import '../../features/insurance/presentation/bloc/insurance_list_cubit.dart';
 import '../../features/insurance/presentation/bloc/insurance_selection_cubit.dart';
+import '../../features/insurance/presentation/bloc/search_cubit.dart';
 import '../services/user_preferences_service.dart';
 
 /// Service locator instance for dependency injection
@@ -35,6 +37,7 @@ Future<void> setupDependencyInjection() async {
   sl.registerLazySingleton(() => GetInsurances(sl()));
   sl.registerLazySingleton(() => GetInsuranceDetail(sl()));
   sl.registerLazySingleton(() => AddInsurance(sl()));
+  sl.registerLazySingleton(() => SearchInsurances(sl()));
 
   // ============================================================================
   // BLoC / Cubits
@@ -47,5 +50,8 @@ Future<void> setupDependencyInjection() async {
   );
   sl.registerFactory(
     () => InsuranceSelectionCubit(),
+  );
+  sl.registerFactory(
+    () => SearchCubit(sl()),
   );
 }

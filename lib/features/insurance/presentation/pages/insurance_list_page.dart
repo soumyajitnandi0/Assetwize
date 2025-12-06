@@ -77,6 +77,10 @@ class _TabSection extends StatelessWidget {
         TabItem(label: 'My Insurances', icon: Icons.shield_outlined),
         TabItem(label: 'My Garage', icon: Icons.directions_car_outlined),
         TabItem(label: 'My Jewellery', icon: Icons.diamond_outlined),
+        TabItem(label: 'My Realty', icon: Icons.home_outlined),
+        TabItem(label: 'My Electronics', icon: Icons.devices_outlined),
+        TabItem(label: 'Collectibles', icon: Icons.collections_outlined),
+        TabItem(label: 'Arts', icon: Icons.palette_outlined),
       ],
       selectedIndex: 0,
       onTabSelected: (index) {

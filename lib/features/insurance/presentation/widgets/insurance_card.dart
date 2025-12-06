@@ -110,7 +110,19 @@ class _ImageSection extends StatelessWidget {
       return Image.asset(
         imageUrl,
         fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => const _ImageError(),
+        errorBuilder: (context, error, stackTrace) {
+          // Log the error for debugging
+          debugPrint('Failed to load asset: $imageUrl');
+          debugPrint('Error: $error');
+          return const _ImageError();
+        },
+        // Add a placeholder while loading
+        frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+          if (wasSynchronouslyLoaded || frame != null) {
+            return child;
+          }
+          return const _ImagePlaceholder();
+        },
       );
     } else {
       return CachedNetworkImage(
