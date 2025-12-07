@@ -2,14 +2,25 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/services/notification_service.dart';
 import '../../../../core/utils/logger.dart' as logger;
-import '../../domain/repositories/notification_repository.dart';
+import '../../domain/usecases/get_notifications.dart';
+import '../../domain/usecases/mark_notification_as_read.dart';
+import '../../domain/usecases/mark_all_as_read.dart';
+import '../../domain/usecases/delete_notification.dart';
 import 'notifications_state.dart';
 
 /// Cubit for managing notifications state
 class NotificationsCubit extends Cubit<NotificationsState> {
-  final NotificationRepository repository;
+  final GetNotifications _getNotifications;
+  final MarkNotificationAsRead _markNotificationAsRead;
+  final MarkAllAsRead _markAllAsRead;
+  final DeleteNotification _deleteNotification;
 
-  NotificationsCubit(this.repository) : super(const NotificationsInitial());
+  NotificationsCubit(
+    this._getNotifications,
+    this._markNotificationAsRead,
+    this._markAllAsRead,
+    this._deleteNotification,
+  ) : super(const NotificationsInitial());
 
   /// Loads all notifications
   Future<void> loadNotifications() async {
@@ -17,7 +28,7 @@ class NotificationsCubit extends Cubit<NotificationsState> {
     logger.Logger.debug('NotificationsCubit: Loading notifications...');
 
     try {
-      final notifications = await repository.getNotifications();
+      final notifications = await _getNotifications();
       emit(NotificationsLoaded(notifications: notifications));
       logger.Logger.info(
           'NotificationsCubit: Successfully loaded ${notifications.length} notifications');
@@ -35,7 +46,7 @@ class NotificationsCubit extends Cubit<NotificationsState> {
   /// Marks a notification as read
   Future<void> markAsRead(String notificationId) async {
     try {
-      await repository.markAsRead(notificationId);
+      await _markNotificationAsRead(notificationId);
       await loadNotifications(); // Reload to update state
       // Trigger unread count update
       sl<NotificationService>().refreshUnreadCount();
@@ -52,7 +63,7 @@ class NotificationsCubit extends Cubit<NotificationsState> {
   /// Marks all notifications as read
   Future<void> markAllAsRead() async {
     try {
-      await repository.markAllAsRead();
+      await _markAllAsRead();
       await loadNotifications(); // Reload to update state
       // Trigger unread count update
       sl<NotificationService>().refreshUnreadCount();
@@ -69,7 +80,7 @@ class NotificationsCubit extends Cubit<NotificationsState> {
   /// Deletes a notification
   Future<void> deleteNotification(String notificationId) async {
     try {
-      await repository.deleteNotification(notificationId);
+      await _deleteNotification(notificationId);
       await loadNotifications(); // Reload to update state
       // Trigger unread count update
       sl<NotificationService>().refreshUnreadCount();

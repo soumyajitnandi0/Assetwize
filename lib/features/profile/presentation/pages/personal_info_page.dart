@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/di/injection_container.dart';
-import '../../../../core/services/notification_service.dart';
-import '../../../../core/services/user_preferences_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/logger.dart' as logger;
 import '../../../../core/utils/validators.dart';
+import '../../domain/usecases/get_profile.dart';
+import '../../domain/usecases/update_name.dart';
+import '../../domain/usecases/update_phone_number.dart';
+import '../../domain/usecases/update_email.dart';
+import '../../../notifications/domain/usecases/notify_profile_updated.dart';
 import '../widgets/profile_completion_indicator.dart';
 import '../widgets/personal_info_field.dart';
 
@@ -20,7 +23,12 @@ class PersonalInfoPage extends StatefulWidget {
 }
 
 class _PersonalInfoPageState extends State<PersonalInfoPage> {
-  late final UserPreferencesService _userPreferencesService;
+  late final GetProfile _getProfile;
+  late final UpdateName _updateName;
+  late final UpdatePhoneNumber _updatePhoneNumber;
+  late final UpdateEmail _updateEmail;
+  late final NotifyProfileUpdated _notifyProfileUpdated;
+  
   String _userName = '';
   String _phoneNumber = '';
   String _email = '';
@@ -30,27 +38,29 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
   @override
   void initState() {
     super.initState();
-    _userPreferencesService = sl<UserPreferencesService>();
+    _getProfile = sl<GetProfile>();
+    _updateName = sl<UpdateName>();
+    _updatePhoneNumber = sl<UpdatePhoneNumber>();
+    _updateEmail = sl<UpdateEmail>();
+    _notifyProfileUpdated = sl<NotifyProfileUpdated>();
     _loadUserData();
   }
 
   Future<void> _loadUserData() async {
     try {
-      final name = await _userPreferencesService.getUserName();
-      final phone = await _userPreferencesService.getPhoneNumber();
-      final email = await _userPreferencesService.getEmail();
-      final completion = await _userPreferencesService.getProfileCompletion();
+      final profile = await _getProfile();
 
       if (mounted) {
         setState(() {
-          _userName = name ?? '';
-          _phoneNumber = phone ?? '';
-          _email = email ?? '';
-          _profileCompletion = completion;
+          _userName = profile.name ?? '';
+          _phoneNumber = profile.phoneNumber ?? '';
+          _email = profile.email ?? '';
+          _profileCompletion = profile.completionPercentage;
           _isLoading = false;
         });
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      logger.Logger.error('PersonalInfoPage: Failed to load profile', e, stackTrace);
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -83,14 +93,12 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
     );
 
     if (result != null && result.isNotEmpty) {
-      final success = await _userPreferencesService.saveUserName(result);
-      if (!mounted) return;
-      
-      if (success) {
+      try {
+        await _updateName(result);
+        
         // Create notification for profile update
         try {
-          final notificationService = sl<NotificationService>();
-          await notificationService.notifyProfileUpdated('Name');
+          await _notifyProfileUpdated('Name');
         } catch (e, stackTrace) {
           logger.Logger.warning('Failed to create notification for profile update', e, stackTrace);
         }
@@ -101,6 +109,16 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
           const SnackBar(
             content: Text('Name updated successfully'),
             backgroundColor: AppTheme.primaryGreen,
+          ),
+        );
+      } catch (e) {
+        if (!mounted) return;
+        final errorMessage = e.toString().replaceFirst('Exception: ', '');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to update name: $errorMessage'),
+            backgroundColor: AppTheme.errorColor,
+            duration: const Duration(seconds: 3),
           ),
         );
       }
@@ -122,14 +140,12 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
     );
 
     if (result != null && result.isNotEmpty) {
-      final success = await _userPreferencesService.savePhoneNumber(result);
-      if (!mounted) return;
-      
-      if (success) {
+      try {
+        await _updatePhoneNumber(result);
+        
         // Create notification for profile update
         try {
-          final notificationService = sl<NotificationService>();
-          await notificationService.notifyProfileUpdated('Phone Number');
+          await _notifyProfileUpdated('Phone Number');
         } catch (e, stackTrace) {
           logger.Logger.warning('Failed to create notification for profile update', e, stackTrace);
         }
@@ -140,6 +156,16 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
           const SnackBar(
             content: Text('Phone number updated successfully'),
             backgroundColor: AppTheme.primaryGreen,
+          ),
+        );
+      } catch (e) {
+        if (!mounted) return;
+        final errorMessage = e.toString().replaceFirst('Exception: ', '');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to update phone number: $errorMessage'),
+            backgroundColor: AppTheme.errorColor,
+            duration: const Duration(seconds: 3),
           ),
         );
       }
@@ -161,14 +187,12 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
     );
 
     if (result != null && result.isNotEmpty) {
-      final success = await _userPreferencesService.saveEmail(result);
-      if (!mounted) return;
-      
-      if (success) {
+      try {
+        await _updateEmail(result);
+        
         // Create notification for profile update
         try {
-          final notificationService = sl<NotificationService>();
-          await notificationService.notifyProfileUpdated('Email');
+          await _notifyProfileUpdated('Email');
         } catch (e, stackTrace) {
           logger.Logger.warning('Failed to create notification for profile update', e, stackTrace);
         }
@@ -179,6 +203,16 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
           const SnackBar(
             content: Text('Email updated successfully'),
             backgroundColor: AppTheme.primaryGreen,
+          ),
+        );
+      } catch (e) {
+        if (!mounted) return;
+        final errorMessage = e.toString().replaceFirst('Exception: ', '');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to update email: $errorMessage'),
+            backgroundColor: AppTheme.errorColor,
+            duration: const Duration(seconds: 3),
           ),
         );
       }

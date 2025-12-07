@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/constants/app_constants.dart';
-import '../../../../core/services/user_preferences_service.dart';
+import '../../../../core/di/injection_container.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../domain/usecases/get_profile.dart';
 import '../pages/personal_info_page.dart';
 
 /// Profile header card with user avatar and name
@@ -14,22 +15,23 @@ class ProfileHeaderCard extends StatefulWidget {
 }
 
 class _ProfileHeaderCardState extends State<ProfileHeaderCard> {
-  final _userPreferencesService = UserPreferencesService();
+  late final GetProfile _getProfile;
   String _userName = 'User';
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
+    _getProfile = sl<GetProfile>();
     _loadUserName();
   }
 
   Future<void> _loadUserName() async {
     try {
-      final name = await _userPreferencesService.getUserName();
+      final profile = await _getProfile();
       if (mounted) {
         setState(() {
-          _userName = name ?? 'User';
+          _userName = profile.name ?? 'User';
           _isLoading = false;
         });
       }

@@ -4,6 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../garage/presentation/bloc/garage_list_cubit.dart';
+import '../../../garage/presentation/pages/garage_list_page.dart';
 import '../bloc/insurance_detail_cubit.dart';
 import '../bloc/insurance_list_cubit.dart';
 import '../bloc/insurance_list_state.dart';
@@ -22,10 +24,19 @@ class InsuranceListPage extends StatefulWidget {
 
   @override
   State<InsuranceListPage> createState() => _InsuranceListPageState();
+
+  // ValueNotifier to communicate tab switches from other pages
+  static final ValueNotifier<int?> _tabSwitchNotifier = ValueNotifier<int?>(null);
+
+  /// Static method to switch to garage tab from anywhere
+  static void switchToGarageTab() {
+    _tabSwitchNotifier.value = 1;
+  }
 }
 
 class _InsuranceListPageState extends State<InsuranceListPage> {
   int _selectedTabIndex = 0;
+  int _garageTabRefreshKey = 0;
 
   @override
   void initState() {
@@ -37,6 +48,34 @@ class _InsuranceListPageState extends State<InsuranceListPage> {
         context.read<InsuranceListCubit>().loadInsurances();
       }
     });
+    
+    // Listen for tab switch requests
+    InsuranceListPage._tabSwitchNotifier.addListener(_handleTabSwitch);
+  }
+
+  @override
+  void dispose() {
+    InsuranceListPage._tabSwitchNotifier.removeListener(_handleTabSwitch);
+    super.dispose();
+  }
+
+  void _handleTabSwitch() {
+    final targetTab = InsuranceListPage._tabSwitchNotifier.value;
+    if (targetTab != null && mounted) {
+      // If switching to garage tab, increment refresh key to force widget recreation
+      if (targetTab == 1) {
+        setState(() {
+          _selectedTabIndex = targetTab;
+          _garageTabRefreshKey++;
+        });
+      } else {
+        setState(() {
+          _selectedTabIndex = targetTab;
+        });
+      }
+      // Reset the notifier
+      InsuranceListPage._tabSwitchNotifier.value = null;
+    }
   }
 
   @override
@@ -72,7 +111,13 @@ class _InsuranceListPageState extends State<InsuranceListPage> {
           builder: (context, state) => _buildStateContent(context, state),
         );
       case 1: // My Garage
-        return const _ComingSoonView(title: 'My Garage');
+        // Use a key to force recreation when refresh key changes
+        // This ensures a fresh cubit instance and data refresh
+        return BlocProvider(
+          key: ValueKey('garage_tab_$_garageTabRefreshKey'),
+          create: (_) => sl<GarageListCubit>()..loadGarages(),
+          child: const GarageListPage(),
+        );
       case 2: // My Jewellery
         return const _ComingSoonView(title: 'My Jewellery');
       case 3: // My Realty

@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import '../../../../core/constants/app_constants.dart';
 
 /// Insurance entity representing an insurance policy
 /// This is a pure domain entity with no Flutter dependencies
@@ -27,11 +28,12 @@ class Insurance extends Equatable {
     this.metadata,
   });
 
-  /// Returns true if the insurance is expiring within 30 days
+  /// Returns true if the insurance is expiring within the configured days
   bool get isExpiringSoon {
     final now = DateTime.now();
     final daysUntilExpiry = endDate.difference(now).inDays;
-    return daysUntilExpiry > 0 && daysUntilExpiry <= 30;
+    return daysUntilExpiry > 0 && 
+           daysUntilExpiry <= AppConstants.insuranceExpiringSoonDays;
   }
 
   @override

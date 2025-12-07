@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/constants/app_constants.dart';
-import '../../../../core/services/user_preferences_service.dart';
+import '../../../../core/di/injection_container.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../profile/domain/usecases/get_profile.dart';
 
 /// Header section with title and subtitle
 /// Matches UI-2 design with proper spacing and typography
@@ -21,22 +22,23 @@ class SectionHeader extends StatefulWidget {
 }
 
 class _SectionHeaderState extends State<SectionHeader> {
-  final _userPreferencesService = UserPreferencesService();
-  String _userName = '';
+  late final GetProfile _getProfile;
+  String _userName = 'User';
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
+    _getProfile = sl<GetProfile>();
     _loadUserName();
   }
 
   Future<void> _loadUserName() async {
     try {
-      final name = await _userPreferencesService.getUserName();
+      final profile = await _getProfile();
       if (mounted) {
         setState(() {
-          _userName = name ?? 'User';
+          _userName = profile.name ?? 'User';
           _isLoading = false;
         });
       }

@@ -7,18 +7,21 @@ import '../../../../core/services/groq_chat_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/logger.dart' as logger;
 import '../../domain/entities/insurance.dart';
+import '../../../garage/domain/entities/garage.dart';
 
-/// Chatbot page for asking questions about insurance
+/// Chatbot page for asking questions about insurance or garage/vehicles
 ///
 /// Provides an AI-powered chat interface using Groq API
-/// to answer questions about the user's insurance policy.
+/// to answer questions about the user's insurance policy or vehicle.
 /// Follows conversation-based pattern with message history.
 class ChatbotPage extends StatefulWidget {
   final Insurance? insurance;
+  final Garage? garage;
 
   const ChatbotPage({
     super.key,
     this.insurance,
+    this.garage,
   });
 
   @override
@@ -52,14 +55,22 @@ class _ChatbotPageState extends State<ChatbotPage> {
   /// Generates a unique conversation ID
   String _generateConversationId() {
     final timestamp = DateTime.now().millisecondsSinceEpoch;
-    final insuranceId = widget.insurance?.id ?? 'general';
-    return 'conv_${insuranceId}_$timestamp';
+    final assetId = widget.insurance?.id ?? widget.garage?.id ?? 'general';
+    return 'conv_${assetId}_$timestamp';
   }
 
   void _addWelcomeMessage() {
-    final welcomeText = widget.insurance != null
-        ? 'Hello! I\'m your insurance assistant. I can help you with questions about your ${widget.insurance!.title} policy from ${widget.insurance!.provider}. What would you like to know?'
-        : 'Hello! I\'m your insurance assistant. How can I help you today?';
+    String welcomeText;
+    if (widget.insurance != null) {
+      welcomeText = 'Hello! I\'m your insurance assistant. I can help you with questions about your ${widget.insurance!.title} policy from ${widget.insurance!.provider}. What would you like to know?';
+    } else if (widget.garage != null) {
+      final vehicleName = widget.garage!.make != null || widget.garage!.model != null
+          ? '${widget.garage!.make ?? ''} ${widget.garage!.model ?? ''}'.trim()
+          : widget.garage!.vehicleType;
+      welcomeText = 'Hello! I\'m your vehicle assistant. I can help you with questions about your $vehicleName (${widget.garage!.registrationNumber}). What would you like to know?';
+    } else {
+      welcomeText = 'Hello! I\'m your assistant. How can I help you today?';
+    }
 
     setState(() {
       _messages.add(ChatMessage(
@@ -88,10 +99,10 @@ class _ChatbotPageState extends State<ChatbotPage> {
     _scrollToBottom();
 
     try {
-      // Prepare insurance context (only for new conversations)
-      Map<String, dynamic>? insuranceContext;
+      // Prepare context (only for new conversations)
+      Map<String, dynamic>? assetContext;
       if (widget.insurance != null) {
-        insuranceContext = {
+        assetContext = {
           'title': widget.insurance!.title,
           'provider': widget.insurance!.provider,
           'policyNumber': widget.insurance!.policyNumber,
@@ -99,13 +110,25 @@ class _ChatbotPageState extends State<ChatbotPage> {
           'endDate': widget.insurance!.endDate.toIso8601String(),
           'shortDescription': widget.insurance!.shortDescription,
         };
+      } else if (widget.garage != null) {
+        assetContext = {
+          'vehicleType': widget.garage!.vehicleType,
+          'registrationNumber': widget.garage!.registrationNumber,
+          'make': widget.garage!.make,
+          'model': widget.garage!.model,
+          'year': widget.garage!.year,
+          'color': widget.garage!.color,
+          'insuranceProvider': widget.garage!.insuranceProvider,
+          'policyNumber': widget.garage!.policyNumber,
+          'insuranceEndDate': widget.garage!.insuranceEndDate?.toIso8601String(),
+        };
       }
 
       // Get AI response with conversation history
       final response = await _chatService.sendMessage(
         message,
         _conversationId,
-        insuranceContext: insuranceContext,
+        insuranceContext: assetContext,
       );
 
       // Add AI response to UI
@@ -178,7 +201,7 @@ class _ChatbotPageState extends State<ChatbotPage> {
             ),
             const SizedBox(width: 8),
             Text(
-              'Insurance Assistant',
+              widget.garage != null ? 'Vehicle Assistant' : 'Insurance Assistant',
               style: GoogleFonts.montserrat(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,

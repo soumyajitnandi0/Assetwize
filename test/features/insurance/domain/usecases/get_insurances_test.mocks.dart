@@ -66,4 +66,25 @@ class MockInsuranceRepository extends _i1.Mock
           ),
         )),
       ) as _i4.Future<_i2.Insurance>);
+
+  @override
+  _i4.Future<void> addInsurance(_i2.Insurance? insurance) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #addInsurance,
+          [insurance],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> clearAll() => (super.noSuchMethod(
+        Invocation.method(
+          #clearAll,
+          [],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
 }

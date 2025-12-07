@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/services/notification_service.dart';
+import '../../../notifications/domain/usecases/notify_asset_added.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/insurance_image_helper.dart';
 import '../../../../core/utils/logger.dart' as logger;
@@ -123,11 +124,13 @@ class _NewInsuranceDetailsPageState extends State<NewInsuranceDetailsPage> {
 
       // Create notification for new asset added
       try {
-        final notificationService = sl<NotificationService>();
-        await notificationService.notifyAssetAdded(
+        final notifyAssetAdded = sl<NotifyAssetAdded>();
+        await notifyAssetAdded(
           'Insurance',
           _titleController.text.trim(),
         );
+        // Refresh unread count
+        sl<NotificationService>().refreshUnreadCount();
       } catch (e, stackTrace) {
         // Log error but don't block the flow
         logger.Logger.warning('Failed to create notification for new asset', e, stackTrace);

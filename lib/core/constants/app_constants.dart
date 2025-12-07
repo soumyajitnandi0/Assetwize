@@ -64,4 +64,31 @@ class AppConstants {
   static const Duration connectionTimeout = Duration(seconds: 30);
   static const Duration receiveTimeout = Duration(seconds: 30);
   static const int maxRetryAttempts = 3;
+
+  // ============================================================================
+  // BUSINESS LOGIC CONSTANTS
+  // ============================================================================
+  /// Number of days before insurance expiry to show "expiring soon" warning
+  static const int insuranceExpiringSoonDays = 30;
+  
+  /// Total number of profile fields for completion calculation
+  static const int profileTotalFields = 3; // Name, Phone, Email
+  
+  /// Minimum length for user name
+  static const int minNameLength = 1;
+  
+  /// Maximum length for user name
+  static const int maxNameLength = 100;
+  
+  /// Minimum length for phone number
+  static const int minPhoneLength = 10;
+  
+  /// Maximum length for phone number
+  static const int maxPhoneLength = 15;
+  
+  /// Search debounce delay in milliseconds
+  static const int searchDebounceMs = 500;
+  
+  /// Notification ID prefix
+  static const String notificationIdPrefix = 'notif_';
 }

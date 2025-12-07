@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/constants/app_constants.dart';
-import '../../../../core/services/user_preferences_service.dart';
+import '../../../../core/di/injection_container.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/validators.dart';
+import '../../domain/usecases/complete_onboarding.dart';
+import '../../../profile/domain/usecases/update_name.dart';
+import '../../../profile/domain/usecases/update_phone_number.dart';
 
 /// Welcome/Onboarding page for first-time users
 ///
@@ -19,8 +22,18 @@ class _WelcomePageState extends State<WelcomePage> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
-  final _userPreferencesService = UserPreferencesService();
+  late final UpdateName _updateName;
+  late final UpdatePhoneNumber _updatePhoneNumber;
+  late final CompleteOnboarding _completeOnboarding;
   bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _updateName = sl<UpdateName>();
+    _updatePhoneNumber = sl<UpdatePhoneNumber>();
+    _completeOnboarding = sl<CompleteOnboarding>();
+  }
 
   @override
   void dispose() {
@@ -42,35 +55,28 @@ class _WelcomePageState extends State<WelcomePage> {
       final name = _nameController.text.trim();
       final phone = _phoneController.text.trim();
 
-      final nameSuccess = await _userPreferencesService.saveUserName(name);
-      final phoneSuccess = await _userPreferencesService.savePhoneNumber(phone);
+      // Update name and phone using domain use cases
+      await _updateName(name);
+      await _updatePhoneNumber(phone);
 
       if (!mounted) return;
 
-      if (nameSuccess && phoneSuccess) {
-        // Mark first launch as complete
-        await _userPreferencesService.setFirstLaunchComplete();
+      // Mark onboarding as complete
+      await _completeOnboarding();
 
-        // Navigate to main app
-        if (mounted) {
-          Navigator.of(context).pushReplacementNamed('/home');
-        }
-      } else {
-        // Show error message
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to save your information. Please try again.'),
-            backgroundColor: AppTheme.errorColor,
-          ),
-        );
+      // Navigate to main app
+      if (mounted) {
+        Navigator.of(context).pushReplacementNamed('/home');
       }
     } catch (e) {
       if (!mounted) return;
 
+      final errorMessage = e.toString().replaceFirst('Exception: ', '');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('An error occurred: ${e.toString()}'),
+          content: Text('Failed to save: $errorMessage'),
           backgroundColor: AppTheme.errorColor,
+          duration: const Duration(seconds: 3),
         ),
       );
     } finally {

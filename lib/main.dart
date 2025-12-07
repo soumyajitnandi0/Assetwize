@@ -5,11 +5,11 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'core/bloc/app_bloc_observer.dart';
 import 'core/di/injection_container.dart';
-import 'core/services/user_preferences_service.dart';
 import 'core/theme/app_theme.dart';
 import 'core/utils/logger.dart' as logger;
 import 'core/widgets/error_boundary.dart';
 import 'features/insurance/presentation/bloc/insurance_list_cubit.dart';
+import 'features/onboarding/domain/usecases/check_first_launch.dart';
 import 'core/navigation/main_navigator.dart';
 import 'features/onboarding/presentation/pages/welcome_page.dart';
 
@@ -109,7 +109,6 @@ class AssetwizeApp extends StatefulWidget {
 }
 
 class _AssetwizeAppState extends State<AssetwizeApp> {
-  final _userPreferencesService = UserPreferencesService();
   bool _isFirstLaunch = true;
   bool _isLoading = true;
 
@@ -121,17 +120,19 @@ class _AssetwizeAppState extends State<AssetwizeApp> {
 
   Future<void> _checkFirstLaunch() async {
     try {
-      final isFirst = await _userPreferencesService.isFirstLaunch();
+      final checkFirstLaunch = sl<CheckFirstLaunch>();
+      final isFirst = await checkFirstLaunch();
       if (mounted) {
         setState(() {
           _isFirstLaunch = isFirst;
           _isLoading = false;
         });
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
       logger.Logger.error(
         'Failed to check first launch status',
         e,
+        stackTrace,
       );
       // Default to showing welcome page if check fails
       if (mounted) {

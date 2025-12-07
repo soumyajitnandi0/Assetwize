@@ -1,7 +1,10 @@
+import '../constants/app_constants.dart';
+
 /// Input validation utilities
 ///
 /// Provides reusable validation functions for form inputs
 /// and data validation throughout the application.
+/// Uses constants from AppConstants for consistent validation rules.
 class Validators {
   Validators._();
 
@@ -50,10 +53,11 @@ class Validators {
     if (value == null || value.trim().isEmpty) {
       return 'Email cannot be empty';
     }
+    final trimmed = value.trim();
     final emailRegex = RegExp(
       r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
     );
-    if (!emailRegex.hasMatch(value)) {
+    if (!emailRegex.hasMatch(trimmed)) {
       return 'Please enter a valid email address';
     }
     return null;
@@ -62,16 +66,46 @@ class Validators {
   /// Validates a phone number format
   ///
   /// Returns null if valid, error message if invalid.
+  /// Uses constants from AppConstants for min/max length.
   static String? phoneNumber(String? value) {
     if (value == null || value.trim().isEmpty) {
       return 'Phone number cannot be empty';
     }
     // Remove common formatting characters
     final cleaned = value.replaceAll(RegExp(r'[\s\-\(\)]'), '');
-    final phoneRegex = RegExp(r'^\+?[0-9]{10,15}$');
+    
+    // Check length using constants
+    if (cleaned.length < AppConstants.minPhoneLength) {
+      return 'Phone number must be at least ${AppConstants.minPhoneLength} digits';
+    }
+    if (cleaned.length > AppConstants.maxPhoneLength) {
+      return 'Phone number must be at most ${AppConstants.maxPhoneLength} digits';
+    }
+    
+    final phoneRegex = RegExp(r'^\+?[0-9]+$');
     if (!phoneRegex.hasMatch(cleaned)) {
       return 'Please enter a valid phone number';
     }
+    return null;
+  }
+
+  /// Validates a name field
+  ///
+  /// Returns null if valid, error message if invalid.
+  /// Uses constants from AppConstants for min/max length.
+  static String? name(String? value, {String fieldName = 'Name'}) {
+    if (value == null || value.trim().isEmpty) {
+      return '$fieldName cannot be empty';
+    }
+    final trimmed = value.trim();
+    
+    if (trimmed.length < AppConstants.minNameLength) {
+      return '$fieldName must be at least ${AppConstants.minNameLength} character';
+    }
+    if (trimmed.length > AppConstants.maxNameLength) {
+      return '$fieldName must be at most ${AppConstants.maxNameLength} characters';
+    }
+    
     return null;
   }
 
