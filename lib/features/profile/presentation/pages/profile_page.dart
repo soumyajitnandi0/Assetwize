@@ -1,12 +1,18 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/di/injection_container.dart';
+import '../../../../core/services/notification_service.dart';
 import '../../../../core/services/user_preferences_service.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/error/exceptions.dart';
 import '../../../../core/utils/logger.dart' as logger;
 import '../../../../core/widgets/error_boundary.dart';
 import '../../../insurance/domain/repositories/insurance_repository.dart';
+import '../../../notifications/presentation/bloc/notifications_cubit.dart';
+import '../../../notifications/presentation/pages/notifications_page.dart';
 import '../../../onboarding/presentation/pages/welcome_page.dart';
 import '../widgets/profile_header_card.dart';
 import '../widgets/settings_section.dart';
@@ -14,8 +20,51 @@ import '../widgets/settings_item.dart';
 
 /// Profile/Settings page
 /// Displays user profile information and app settings
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
+
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  int _unreadCount = 0;
+  StreamSubscription<int>? _unreadCountSubscription;
+  final _notificationService = sl<NotificationService>();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUnreadCount();
+    // Listen to unread count stream for real-time updates
+    _unreadCountSubscription = _notificationService.unreadCountStream.listen(
+      (count) {
+        if (mounted) {
+          setState(() {
+            _unreadCount = count;
+          });
+        }
+      },
+      onError: (error) {
+        logger.Logger.error('ProfilePage: Error in unread count stream', error);
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _unreadCountSubscription?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _loadUnreadCount() async {
+    final count = await _notificationService.getUnreadCount();
+    if (mounted) {
+      setState(() {
+        _unreadCount = count;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +92,7 @@ class ProfilePage extends StatelessWidget {
                     icon: Icons.cloud_outlined,
                     onTap: () {
                       // TODO: Implement backup functionality
-                      debugPrint('Backup tapped');
+                      logger.Logger.debug('Backup tapped');
                     },
                   ),
                   SettingsItem(
@@ -51,7 +100,7 @@ class ProfilePage extends StatelessWidget {
                     icon: Icons.fingerprint_outlined,
                     onTap: () {
                       // TODO: Implement biometrics setup
-                      debugPrint('Biometrics tapped');
+                      logger.Logger.debug('Biometrics tapped');
                     },
                   ),
                 ],
@@ -68,7 +117,7 @@ class ProfilePage extends StatelessWidget {
                     icon: Icons.shield_outlined,
                     onTap: () {
                       // TODO: Navigate to privacy policy
-                      debugPrint('Privacy Policy tapped');
+                      logger.Logger.debug('Privacy Policy tapped');
                     },
                   ),
                   SettingsItem(
@@ -76,7 +125,7 @@ class ProfilePage extends StatelessWidget {
                     icon: Icons.shield_outlined,
                     onTap: () {
                       // TODO: Navigate to terms and conditions
-                      debugPrint('Terms and Conditions tapped');
+                      logger.Logger.debug('Terms and Conditions tapped');
                     },
                   ),
                   SettingsItem(
@@ -84,7 +133,7 @@ class ProfilePage extends StatelessWidget {
                     icon: Icons.shield_outlined,
                     onTap: () {
                       // TODO: Navigate to disclaimer
-                      debugPrint('Disclaimer tapped');
+                      logger.Logger.debug('Disclaimer tapped');
                     },
                   ),
                   SettingsItem(
@@ -92,7 +141,7 @@ class ProfilePage extends StatelessWidget {
                     icon: Icons.shield_outlined,
                     onTap: () {
                       // TODO: Navigate to acceptable user policy
-                      debugPrint('Acceptable User Policy tapped');
+                      logger.Logger.debug('Acceptable User Policy tapped');
                     },
                   ),
                 ],
@@ -128,7 +177,7 @@ class ProfilePage extends StatelessWidget {
                     showDivider: false,
                     onTap: () {
                       // TODO: Navigate to account closure guide
-                      debugPrint('Close account guide tapped');
+                      logger.Logger.debug('Close account guide tapped');
                     },
                   ),
                 ],
@@ -167,13 +216,57 @@ class ProfilePage extends StatelessWidget {
         ),
       ),
       actions: [
-        IconButton(
-          icon: const Icon(Icons.notifications_outlined),
-          onPressed: () {
-            // TODO: Navigate to notifications
-            debugPrint('Notifications tapped');
-          },
-          color: AppTheme.textPrimary,
+        Stack(
+          clipBehavior: Clip.none,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.notifications_outlined),
+              onPressed: () async {
+                // Navigate to notifications page
+                await Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => BlocProvider(
+                      create: (_) => sl<NotificationsCubit>(),
+                      child: const NotificationsPage(),
+                    ),
+                  ),
+                );
+                // Reload unread count when returning from notifications page
+                _loadUnreadCount();
+              },
+              color: AppTheme.textPrimary,
+            ),
+            if (_unreadCount > 0)
+              Positioned(
+                right: 8,
+                top: 8,
+                child: Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: _unreadCount > 9 ? 4 : 6,
+                    vertical: 2,
+                  ),
+                  decoration: const BoxDecoration(
+                    color: AppTheme.errorColor,
+                    shape: BoxShape.circle,
+                  ),
+                  constraints: const BoxConstraints(
+                    minWidth: 18,
+                    minHeight: 18,
+                  ),
+                  child: Center(
+                    child: Text(
+                      _unreadCount > 99 ? '99+' : _unreadCount.toString(),
+                      style: GoogleFonts.montserrat(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+              ),
+          ],
         ),
       ],
       backgroundColor: Colors.white,
@@ -273,7 +366,7 @@ class ProfilePage extends StatelessWidget {
       );
 
     try {
-      final userPreferencesService = UserPreferencesService();
+      final userPreferencesService = sl<UserPreferencesService>();
       final insuranceRepository = sl<InsuranceRepository>();
 
       // Clear all insurance data
@@ -284,7 +377,7 @@ class ProfilePage extends StatelessWidget {
       final success = await userPreferencesService.resetToFirstLaunch();
       
       if (!success) {
-        throw Exception('Failed to reset app state');
+        throw const StorageException('Failed to reset app state');
       }
 
       logger.Logger.info('User logged out, app reset to first launch');

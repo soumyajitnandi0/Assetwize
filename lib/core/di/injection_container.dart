@@ -5,10 +5,15 @@ import '../../features/insurance/domain/usecases/add_insurance.dart';
 import '../../features/insurance/domain/usecases/get_insurance_detail.dart';
 import '../../features/insurance/domain/usecases/get_insurances.dart';
 import '../../features/insurance/domain/usecases/search_insurances.dart';
-import '../../features/insurance/presentation/bloc/insurance_detail_cubit.dart';
 import '../../features/insurance/presentation/bloc/insurance_list_cubit.dart';
+import '../../features/insurance/presentation/bloc/insurance_detail_cubit.dart';
 import '../../features/insurance/presentation/bloc/insurance_selection_cubit.dart';
 import '../../features/insurance/presentation/bloc/search_cubit.dart';
+import '../../features/notifications/data/repositories/notification_repository_impl.dart';
+import '../../features/notifications/domain/repositories/notification_repository.dart';
+import '../../features/notifications/presentation/bloc/notifications_cubit.dart';
+import '../services/groq_chat_service.dart';
+import '../services/notification_service.dart';
 import '../services/user_preferences_service.dart';
 
 /// Service locator instance for dependency injection
@@ -23,12 +28,21 @@ Future<void> setupDependencyInjection() async {
   sl.registerLazySingleton<UserPreferencesService>(
     () => UserPreferencesService(),
   );
+  sl.registerLazySingleton<NotificationService>(
+    () => NotificationService(sl()),
+  );
+  sl.registerLazySingleton<GroqChatService>(
+    () => GroqChatService(),
+  );
 
   // ============================================================================
   // Repositories
   // ============================================================================
   sl.registerLazySingleton<InsuranceRepository>(
     () => InsuranceRepositoryImpl(),
+  );
+  sl.registerLazySingleton<NotificationRepository>(
+    () => NotificationRepositoryImpl(),
   );
 
   // ============================================================================
@@ -53,5 +67,8 @@ Future<void> setupDependencyInjection() async {
   );
   sl.registerFactory(
     () => SearchCubit(sl()),
+  );
+  sl.registerFactory(
+    () => NotificationsCubit(sl()),
   );
 }

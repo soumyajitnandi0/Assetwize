@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/logger.dart' as logger;
 import '../../domain/entities/insurance.dart';
 
 /// Optimized insurance card matching Figma design
@@ -112,8 +113,7 @@ class _ImageSection extends StatelessWidget {
         fit: BoxFit.cover,
         errorBuilder: (context, error, stackTrace) {
           // Log the error for debugging
-          debugPrint('Failed to load asset: $imageUrl');
-          debugPrint('Error: $error');
+          logger.Logger.warning('Failed to load asset image in card', error, stackTrace);
           return const _ImageError();
         },
         // Add a placeholder while loading

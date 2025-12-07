@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -10,6 +11,7 @@ import '../widgets/insurance_card.dart';
 import '../widgets/new_insurance_card.dart';
 import '../widgets/rounded_tab_bar.dart';
 import '../widgets/section_header.dart';
+import 'chatbot_page.dart';
 import 'insurance_detail_page.dart';
 import 'new_insurance_selection_page.dart';
 
@@ -23,13 +25,17 @@ class InsuranceListPage extends StatefulWidget {
 }
 
 class _InsuranceListPageState extends State<InsuranceListPage> {
+  int _selectedTabIndex = 0;
+
   @override
   void initState() {
     super.initState();
     // Load insurances when page is first shown
     // This ensures data is loaded even when navigating from welcome page
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<InsuranceListCubit>().loadInsurances();
+      if (_selectedTabIndex == 0) {
+        context.read<InsuranceListCubit>().loadInsurances();
+      }
     });
   }
 
@@ -42,16 +48,38 @@ class _InsuranceListPageState extends State<InsuranceListPage> {
           const SectionHeader(
             title: 'ASSETWIZE',
           ),
-          const _TabSection(),
+          _TabSection(
+            selectedIndex: _selectedTabIndex,
+            onTabSelected: (index) {
+              setState(() {
+                _selectedTabIndex = index;
+              });
+            },
+          ),
           const SizedBox(height: AppConstants.spacingM),
           Expanded(
-            child: BlocBuilder<InsuranceListCubit, InsuranceListState>(
-              builder: (context, state) => _buildStateContent(context, state),
-            ),
+            child: _buildTabContent(),
           ),
         ],
       ),
     );
+  }
+
+  Widget _buildTabContent() {
+    switch (_selectedTabIndex) {
+      case 0: // My Insurances
+        return BlocBuilder<InsuranceListCubit, InsuranceListState>(
+          builder: (context, state) => _buildStateContent(context, state),
+        );
+      case 1: // My Garage
+        return const _ComingSoonView(title: 'My Garage');
+      case 2: // My Jewellery
+        return const _ComingSoonView(title: 'My Jewellery');
+      case 3: // My Realty
+        return const _ComingSoonView(title: 'My Realty');
+      default:
+        return const _LoadingView();
+    }
   }
 
   Widget _buildStateContent(BuildContext context, InsuranceListState state) {
@@ -68,7 +96,13 @@ class _InsuranceListPageState extends State<InsuranceListPage> {
 
 /// Tab section widget - extracted for better organization
 class _TabSection extends StatelessWidget {
-  const _TabSection();
+  final int selectedIndex;
+  final ValueChanged<int> onTabSelected;
+
+  const _TabSection({
+    required this.selectedIndex,
+    required this.onTabSelected,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -78,15 +112,9 @@ class _TabSection extends StatelessWidget {
         TabItem(label: 'My Garage', icon: Icons.directions_car_outlined),
         TabItem(label: 'My Jewellery', icon: Icons.diamond_outlined),
         TabItem(label: 'My Realty', icon: Icons.home_outlined),
-        TabItem(label: 'My Electronics', icon: Icons.devices_outlined),
-        TabItem(label: 'Collectibles', icon: Icons.collections_outlined),
-        TabItem(label: 'Arts', icon: Icons.palette_outlined),
       ],
-      selectedIndex: 0,
-      onTabSelected: (index) {
-        // TODO: Navigate to other asset categories
-        debugPrint('Tab selected: $index');
-      },
+      selectedIndex: selectedIndex,
+      onTabSelected: onTabSelected,
     );
   }
 }
@@ -199,7 +227,7 @@ class _ContentView extends StatelessWidget {
     return InsuranceCard(
       insurance: insurance,
       onTap: () => _navigateToDetail(context, insurance.id),
-      onAskAssistant: () => _showAssistantSnackBar(context, insurance.title),
+      onAskAssistant: () => _showAssistantSnackBar(context, insurance),
     );
   }
 
@@ -222,12 +250,64 @@ class _ContentView extends StatelessWidget {
     );
   }
 
-  void _showAssistantSnackBar(BuildContext context, String title) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Ask Assistant about $title'),
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 2),
+  void _showAssistantSnackBar(BuildContext context, dynamic insurance) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ChatbotPage(insurance: insurance),
+      ),
+    );
+  }
+}
+
+/// Coming soon view for tabs that are not yet implemented
+class _ComingSoonView extends StatelessWidget {
+  final String title;
+
+  const _ComingSoonView({required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppConstants.spacingXL),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.auto_awesome,
+              size: 64,
+              color: AppTheme.primaryGreen.withOpacity(0.6),
+            ),
+            const SizedBox(height: AppConstants.spacingL),
+            Text(
+              title,
+              style: GoogleFonts.montserrat(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.textPrimary,
+              ),
+            ),
+            const SizedBox(height: AppConstants.spacingM),
+            Text(
+              'Coming Soon',
+              style: GoogleFonts.montserrat(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: AppTheme.textSecondary,
+              ),
+            ),
+            const SizedBox(height: AppConstants.spacingS),
+            Text(
+              'This feature is under development.\nWe\'ll be launching it soon!',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.montserrat(
+                fontSize: 14,
+                color: AppTheme.textSecondary,
+                height: 1.5,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

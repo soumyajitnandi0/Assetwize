@@ -1,3 +1,4 @@
+import '../../../../core/error/exceptions.dart';
 import '../entities/insurance.dart';
 import '../repositories/insurance_repository.dart';
 
@@ -14,12 +15,19 @@ class GetInsurances {
   /// Executes the use case and returns a list of insurance policies
   ///
   /// Returns an empty list if no insurances are found.
-  /// Throws an exception if the repository operation fails.
+  /// Throws a [StorageException] if the repository operation fails.
   Future<List<Insurance>> call() async {
     try {
       return await repository.getInsurances();
-    } catch (e) {
-      throw Exception('Failed to fetch insurances: ${e.toString()}');
+    } catch (e, stackTrace) {
+      if (e is AppException) {
+        rethrow;
+      }
+      throw StorageException(
+        'Failed to fetch insurances: ${e.toString()}',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
     }
   }
 }

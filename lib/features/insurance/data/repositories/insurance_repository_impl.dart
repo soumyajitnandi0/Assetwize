@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../../core/error/exceptions.dart';
 import '../../domain/entities/insurance.dart';
 import '../../domain/repositories/insurance_repository.dart';
 import '../models/insurance_model.dart';
@@ -31,10 +32,18 @@ class InsuranceRepositoryImpl implements InsuranceRepository {
       return storedList
           .map((json) => InsuranceModel.fromJson(json as Map<String, dynamic>))
           .toList();
-    } on FormatException {
-      throw Exception('Failed to parse stored insurance data');
-    } catch (e) {
-      throw Exception('Failed to load insurances: ${e.toString()}');
+    } on FormatException catch (e, stackTrace) {
+      throw StorageException(
+        'Failed to parse stored insurance data',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
+    } catch (e, stackTrace) {
+      throw StorageException(
+        'Failed to load insurances: ${e.toString()}',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
     }
   }
 
@@ -48,10 +57,17 @@ class InsuranceRepositoryImpl implements InsuranceRepository {
       final success = await prefs.setString(_storageKey, json.encode(jsonList));
 
       if (!success) {
-        throw Exception('Failed to save insurances to storage');
+        throw const StorageException('Failed to save insurances to storage');
       }
-    } catch (e) {
-      throw Exception('Failed to save insurances: ${e.toString()}');
+    } catch (e, stackTrace) {
+      if (e is StorageException) {
+        rethrow;
+      }
+      throw StorageException(
+        'Failed to save insurances: ${e.toString()}',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
     }
   }
 
@@ -60,29 +76,40 @@ class InsuranceRepositoryImpl implements InsuranceRepository {
     try {
       final insurances = await _loadInsurances();
       return List<Insurance>.from(insurances);
-    } catch (e) {
-      throw Exception('Failed to fetch insurances: ${e.toString()}');
+    } catch (e, stackTrace) {
+      if (e is StorageException) {
+        rethrow;
+      }
+      throw StorageException(
+        'Failed to fetch insurances: ${e.toString()}',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
     }
   }
 
   @override
   Future<Insurance> getInsurance(String id) async {
     if (id.isEmpty) {
-      throw Exception('Insurance ID cannot be empty');
+      throw const ValidationException('Insurance ID cannot be empty');
     }
 
     try {
       final insurances = await _loadInsurances();
       final insurance = insurances.firstWhere(
         (insurance) => insurance.id == id,
-        orElse: () => throw Exception('Insurance not found'),
+        orElse: () => throw const NotFoundException('Insurance not found'),
       );
       return insurance;
-    } catch (e) {
-      if (e.toString().contains('not found')) {
+    } catch (e, stackTrace) {
+      if (e is AppException) {
         rethrow;
       }
-      throw Exception('Failed to fetch insurance: ${e.toString()}');
+      throw StorageException(
+        'Failed to fetch insurance: ${e.toString()}',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
     }
   }
 
@@ -101,8 +128,15 @@ class InsuranceRepositoryImpl implements InsuranceRepository {
       }
 
       await _saveInsurances(insurances);
-    } catch (e) {
-      throw Exception('Failed to save insurance: ${e.toString()}');
+    } catch (e, stackTrace) {
+      if (e is StorageException) {
+        rethrow;
+      }
+      throw StorageException(
+        'Failed to save insurance: ${e.toString()}',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
     }
   }
 
@@ -113,10 +147,17 @@ class InsuranceRepositoryImpl implements InsuranceRepository {
       final success = await prefs.remove(_storageKey);
       
       if (!success) {
-        throw Exception('Failed to clear insurance data');
+        throw const StorageException('Failed to clear insurance data');
       }
-    } catch (e) {
-      throw Exception('Failed to clear insurance data: ${e.toString()}');
+    } catch (e, stackTrace) {
+      if (e is StorageException) {
+        rethrow;
+      }
+      throw StorageException(
+        'Failed to clear insurance data: ${e.toString()}',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
     }
   }
 }

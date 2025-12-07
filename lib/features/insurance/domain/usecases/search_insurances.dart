@@ -1,3 +1,4 @@
+import '../../../../core/error/exceptions.dart';
 import '../entities/insurance.dart';
 import '../repositories/insurance_repository.dart';
 
@@ -22,8 +23,8 @@ class SearchInsurances {
   /// - Type
   /// - Short description (if available)
   ///
-  /// Returns an empty list if no matches are found.
-  /// Throws an exception if the repository operation fails.
+  /// Returns an empty list if no matches are found or query is empty.
+  /// Throws a [StorageException] if the repository operation fails.
   Future<List<Insurance>> call(String query) async {
     if (query.trim().isEmpty) {
       return [];
@@ -64,8 +65,15 @@ class SearchInsurances {
 
         return false;
       }).toList();
-    } catch (e) {
-      throw Exception('Failed to search insurances: ${e.toString()}');
+    } catch (e, stackTrace) {
+      if (e is AppException) {
+        rethrow;
+      }
+      throw StorageException(
+        'Failed to search insurances: ${e.toString()}',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
     }
   }
 }

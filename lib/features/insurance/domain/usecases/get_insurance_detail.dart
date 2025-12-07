@@ -1,3 +1,4 @@
+import '../../../../core/error/exceptions.dart';
 import '../entities/insurance.dart';
 import '../repositories/insurance_repository.dart';
 
@@ -15,19 +16,24 @@ class GetInsuranceDetail {
   ///
   /// [id] - The unique identifier of the insurance policy
   ///
-  /// Throws an exception if:
-  /// - The insurance ID is empty or invalid
-  /// - The insurance is not found
-  /// - The repository operation fails
+  /// Throws a [ValidationException] if the insurance ID is empty.
+  /// Throws a [StorageException] if the repository operation fails.
   Future<Insurance> call(String id) async {
     if (id.isEmpty) {
-      throw Exception('Insurance ID cannot be empty');
+      throw const ValidationException('Insurance ID cannot be empty');
     }
 
     try {
       return await repository.getInsurance(id);
-    } catch (e) {
-      throw Exception('Failed to fetch insurance detail: ${e.toString()}');
+    } catch (e, stackTrace) {
+      if (e is AppException) {
+        rethrow;
+      }
+      throw StorageException(
+        'Failed to fetch insurance detail: ${e.toString()}',
+        originalError: e,
+        stackTrace: stackTrace,
+      );
     }
   }
 }

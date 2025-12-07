@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/di/injection_container.dart';
+import '../../../../core/services/notification_service.dart';
 import '../../../../core/services/user_preferences_service.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/logger.dart' as logger;
 import '../../../../core/utils/validators.dart';
 import '../widgets/profile_completion_indicator.dart';
 import '../widgets/personal_info_field.dart';
@@ -17,7 +20,7 @@ class PersonalInfoPage extends StatefulWidget {
 }
 
 class _PersonalInfoPageState extends State<PersonalInfoPage> {
-  final _userPreferencesService = UserPreferencesService();
+  late final UserPreferencesService _userPreferencesService;
   String _userName = '';
   String _phoneNumber = '';
   String _email = '';
@@ -27,6 +30,7 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
   @override
   void initState() {
     super.initState();
+    _userPreferencesService = sl<UserPreferencesService>();
     _loadUserData();
   }
 
@@ -83,6 +87,14 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
       if (!mounted) return;
       
       if (success) {
+        // Create notification for profile update
+        try {
+          final notificationService = sl<NotificationService>();
+          await notificationService.notifyProfileUpdated('Name');
+        } catch (e, stackTrace) {
+          logger.Logger.warning('Failed to create notification for profile update', e, stackTrace);
+        }
+        
         await _loadUserData();
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
@@ -114,6 +126,14 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
       if (!mounted) return;
       
       if (success) {
+        // Create notification for profile update
+        try {
+          final notificationService = sl<NotificationService>();
+          await notificationService.notifyProfileUpdated('Phone Number');
+        } catch (e, stackTrace) {
+          logger.Logger.warning('Failed to create notification for profile update', e, stackTrace);
+        }
+        
         await _loadUserData();
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
@@ -145,6 +165,14 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
       if (!mounted) return;
       
       if (success) {
+        // Create notification for profile update
+        try {
+          final notificationService = sl<NotificationService>();
+          await notificationService.notifyProfileUpdated('Email');
+        } catch (e, stackTrace) {
+          logger.Logger.warning('Failed to create notification for profile update', e, stackTrace);
+        }
+        
         await _loadUserData();
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(

@@ -32,6 +32,15 @@ class CacheException extends AppException {
   });
 }
 
+/// Exception thrown when a storage operation fails
+class StorageException extends AppException {
+  const StorageException(
+    super.message, {
+    super.originalError,
+    super.stackTrace,
+  });
+}
+
 /// Exception thrown when data validation fails
 class ValidationException extends AppException {
   const ValidationException(
@@ -44,6 +53,15 @@ class ValidationException extends AppException {
 /// Exception thrown when a network operation fails
 class NetworkException extends AppException {
   const NetworkException(
+    super.message, {
+    super.originalError,
+    super.stackTrace,
+  });
+}
+
+/// Exception thrown when a requested resource is not found
+class NotFoundException extends AppException {
+  const NotFoundException(
     super.message, {
     super.originalError,
     super.stackTrace,

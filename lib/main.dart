@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'core/bloc/app_bloc_observer.dart';
 import 'core/di/injection_container.dart';
@@ -18,6 +19,19 @@ import 'features/onboarding/presentation/pages/welcome_page.dart';
 /// and error handling before running the app.
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Load environment variables from .env file
+  try {
+    await dotenv.load(fileName: '.env');
+    logger.Logger.info('Environment variables loaded successfully');
+  } catch (e, stackTrace) {
+    logger.Logger.warning(
+      'Failed to load .env file. Some features may not work without API keys.',
+      e,
+      stackTrace,
+    );
+    // Continue anyway - app can still run without some API keys
+  }
 
   // Setup error handling for Flutter framework errors
   FlutterError.onError = (FlutterErrorDetails details) {

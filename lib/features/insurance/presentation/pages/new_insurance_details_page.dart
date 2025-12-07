@@ -3,8 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/di/injection_container.dart';
+import '../../../../core/services/notification_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/insurance_image_helper.dart';
+import '../../../../core/utils/logger.dart' as logger;
 import '../../domain/entities/insurance.dart';
 import '../../domain/repositories/insurance_repository.dart';
 import '../../domain/usecases/add_insurance.dart';
@@ -118,6 +120,18 @@ class _NewInsuranceDetailsPageState extends State<NewInsuranceDetailsPage> {
       );
 
       await addInsuranceUseCase(insurance);
+
+      // Create notification for new asset added
+      try {
+        final notificationService = sl<NotificationService>();
+        await notificationService.notifyAssetAdded(
+          'Insurance',
+          _titleController.text.trim(),
+        );
+      } catch (e, stackTrace) {
+        // Log error but don't block the flow
+        logger.Logger.warning('Failed to create notification for new asset', e, stackTrace);
+      }
 
       // Refresh the list and navigate back
       if (mounted) {
