@@ -24,7 +24,7 @@ void main() {
   });
 
   const tGarageId = '1';
-  final tGarage = Garage(
+  const tGarage = Garage(
     id: tGarageId,
     vehicleType: 'Car',
     registrationNumber: 'ABC123',
@@ -44,7 +44,7 @@ void main() {
     act: (cubit) => cubit.loadGarage(tGarageId),
     expect: () => [
       const GarageDetailLoading(),
-      GarageDetailLoaded(tGarage),
+      const GarageDetailLoaded(tGarage),
     ],
     verify: (_) {
       verify(mockGetGarageDetail(tGarageId)).called(1);
@@ -60,7 +60,7 @@ void main() {
     act: (cubit) => cubit.loadGarage(tGarageId),
     expect: () => [
       const GarageDetailLoading(),
-      const GarageDetailError('Exception: Not found'),
+      const GarageDetailError('Not found'),
     ],
   );
 

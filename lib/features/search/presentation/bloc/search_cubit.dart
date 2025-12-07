@@ -1,23 +1,19 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/utils/logger.dart' as logger;
-import '../../domain/usecases/search_insurances.dart';
+import '../../domain/usecases/search_all_assets.dart';
 import 'search_state.dart';
 
-/// Cubit for managing search state
+/// Cubit for managing unified search state across all assets
 ///
-/// Handles searching insurance policies with debouncing and state management.
+/// Handles searching across Insurance, Garage, Jewellery, and Realty
+/// with debouncing and state management.
 /// Follows BLoC pattern for predictable state management.
-///
-/// This cubit is responsible for:
-/// - Searching insurance policies by query
-/// - Managing loading, success, empty, and error states
-/// - Providing real-time search functionality
 class SearchCubit extends Cubit<SearchState> {
-  final SearchInsurances searchInsurances;
+  final SearchAllAssets searchAllAssets;
 
-  SearchCubit(this.searchInsurances) : super(const SearchInitial());
+  SearchCubit(this.searchAllAssets) : super(const SearchInitial());
 
-  /// Performs a search with the given query
+  /// Performs a search across all asset types with the given query
   ///
   /// [query] - The search query string
   ///
@@ -37,10 +33,10 @@ class SearchCubit extends Cubit<SearchState> {
     }
 
     emit(const SearchLoading());
-    logger.Logger.debug('SearchCubit: Searching for "$trimmedQuery"');
+    logger.Logger.debug('SearchCubit: Searching all assets for "$trimmedQuery"');
 
     try {
-      final results = await searchInsurances(trimmedQuery);
+      final results = await searchAllAssets(trimmedQuery);
 
       if (results.isEmpty) {
         emit(SearchEmpty(query: trimmedQuery));
@@ -55,7 +51,7 @@ class SearchCubit extends Cubit<SearchState> {
       final errorMessage = _extractErrorMessage(e);
       emit(SearchError(errorMessage));
       logger.Logger.error(
-        'SearchCubit: Failed to search insurances',
+        'SearchCubit: Failed to search assets',
         e,
         stackTrace,
       );
@@ -82,5 +78,4 @@ class SearchCubit extends Cubit<SearchState> {
     return errorString;
   }
 }
-
 

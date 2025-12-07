@@ -1,5 +1,4 @@
 import 'package:equatable/equatable.dart';
-import '../../../../core/constants/app_constants.dart';
 
 /// Insurance entity representing an insurance policy
 /// This is a pure domain entity with no Flutter dependencies
@@ -13,7 +12,12 @@ class Insurance extends Equatable {
   final String imageUrl;
   final String? shortDescription;
   final String type; // e.g., "Home Insurance", "Life Insurance"
+  final String? coverage; // Coverage amount (e.g., "₹5,00,000" or "500000")
   final Map<String, dynamic>? metadata; // Additional flexible data
+
+  /// Number of days before insurance expiry to show "expiring soon" warning
+  /// This is a domain constant, not a UI constant
+  static const int expiringSoonDays = 30;
 
   const Insurance({
     required this.id,
@@ -25,6 +29,7 @@ class Insurance extends Equatable {
     required this.imageUrl,
     this.shortDescription,
     required this.type,
+    this.coverage,
     this.metadata,
   });
 
@@ -33,7 +38,7 @@ class Insurance extends Equatable {
     final now = DateTime.now();
     final daysUntilExpiry = endDate.difference(now).inDays;
     return daysUntilExpiry > 0 && 
-           daysUntilExpiry <= AppConstants.insuranceExpiringSoonDays;
+           daysUntilExpiry <= expiringSoonDays;
   }
 
   @override
@@ -47,6 +52,7 @@ class Insurance extends Equatable {
         imageUrl,
         shortDescription,
         type,
+        coverage,
         metadata,
       ];
 }

@@ -27,12 +27,14 @@ class UpdatePhoneNumber {
     final cleaned = trimmed.replaceAll(RegExp(r'[\s\-\(\)]'), '');
     
     if (cleaned.length < AppConstants.minPhoneLength) {
+      // ignore: prefer_const_constructors
       throw ValidationException(
         'Phone number must be at least ${AppConstants.minPhoneLength} digits',
       );
     }
     
     if (cleaned.length > AppConstants.maxPhoneLength) {
+      // ignore: prefer_const_constructors
       throw ValidationException(
         'Phone number must be at most ${AppConstants.maxPhoneLength} digits',
       );

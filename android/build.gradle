@@ -3,6 +3,14 @@ allprojects {
         google()
         mavenCentral()
     }
+    
+    // Configure Kotlin language version for all projects
+    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+        kotlinOptions {
+            languageVersion = "1.9"
+            apiVersion = "1.9"
+        }
+    }
 }
 
 rootProject.buildDir = "../build"
@@ -11,6 +19,15 @@ subprojects {
 }
 subprojects {
     project.evaluationDependsOn(":app")
+    
+    // Make Flutter properties available to plugins
+    project.ext.flutter = [
+        compileSdkVersion: 35,
+        minSdkVersion: 21,
+        targetSdkVersion: 35,
+        versionCode: 1,
+        versionName: "1.0.0"
+    ]
 }
 
 tasks.register("clean", Delete) {

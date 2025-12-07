@@ -18,7 +18,7 @@ void main() {
     usecase = GetProfile(mockRepository);
   });
 
-  final tProfile = const UserProfile(
+  const tProfile = UserProfile(
     name: 'John Doe',
     phoneNumber: '+1234567890',
     email: 'john@example.com',
@@ -40,7 +40,7 @@ void main() {
   test('should throw StorageException when repository fails', () async {
     // arrange
     when(mockRepository.getProfile())
-        .thenThrow(StorageException('Failed to fetch'));
+        .thenThrow(const StorageException('Failed to fetch'));
 
     // act & assert
     expect(() => usecase(), throwsA(isA<StorageException>()));

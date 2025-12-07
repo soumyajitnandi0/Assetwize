@@ -24,12 +24,14 @@ class UpdateName {
     }
     
     if (trimmed.length < AppConstants.minNameLength) {
+      // ignore: prefer_const_constructors
       throw ValidationException(
         'Name must be at least ${AppConstants.minNameLength} character',
       );
     }
     
     if (trimmed.length > AppConstants.maxNameLength) {
+      // ignore: prefer_const_constructors
       throw ValidationException(
         'Name must be at most ${AppConstants.maxNameLength} characters',
       );

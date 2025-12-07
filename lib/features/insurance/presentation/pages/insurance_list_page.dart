@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../garage/presentation/bloc/garage_list_cubit.dart';
 import '../../../garage/presentation/pages/garage_list_page.dart';
+import '../../../jewellery/presentation/bloc/jewellery_list_cubit.dart';
+import '../../../jewellery/presentation/pages/jewellery_list_page.dart';
+import '../../../realty/presentation/bloc/realty_list_cubit.dart';
+import '../../../realty/presentation/pages/realty_list_page.dart';
 import '../bloc/insurance_detail_cubit.dart';
 import '../bloc/insurance_list_cubit.dart';
 import '../bloc/insurance_list_state.dart';
@@ -32,15 +35,30 @@ class InsuranceListPage extends StatefulWidget {
   static void switchToGarageTab() {
     _tabSwitchNotifier.value = 1;
   }
+
+  /// Static method to switch to jewellery tab from anywhere
+  static void switchToJewelleryTab() {
+    _tabSwitchNotifier.value = 2;
+  }
+
+  /// Static method to switch to realty tab from anywhere
+  static void switchToRealtyTab() {
+    _tabSwitchNotifier.value = 3;
+  }
 }
 
 class _InsuranceListPageState extends State<InsuranceListPage> {
   int _selectedTabIndex = 0;
   int _garageTabRefreshKey = 0;
+  int _jewelleryTabRefreshKey = 0;
+  int _realtyTabRefreshKey = 0;
+  late PageController _pageController;
 
   @override
   void initState() {
     super.initState();
+    _pageController = PageController(initialPage: _selectedTabIndex);
+    
     // Load insurances when page is first shown
     // This ensures data is loaded even when navigating from welcome page
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -55,6 +73,7 @@ class _InsuranceListPageState extends State<InsuranceListPage> {
 
   @override
   void dispose() {
+    _pageController.dispose();
     InsuranceListPage._tabSwitchNotifier.removeListener(_handleTabSwitch);
     super.dispose();
   }
@@ -62,20 +81,53 @@ class _InsuranceListPageState extends State<InsuranceListPage> {
   void _handleTabSwitch() {
     final targetTab = InsuranceListPage._tabSwitchNotifier.value;
     if (targetTab != null && mounted) {
-      // If switching to garage tab, increment refresh key to force widget recreation
+      // If switching to garage, jewellery, or realty tab, increment refresh key to force widget recreation
       if (targetTab == 1) {
         setState(() {
           _selectedTabIndex = targetTab;
           _garageTabRefreshKey++;
+        });
+      } else if (targetTab == 2) {
+        setState(() {
+          _selectedTabIndex = targetTab;
+          _jewelleryTabRefreshKey++;
+        });
+      } else if (targetTab == 3) {
+        setState(() {
+          _selectedTabIndex = targetTab;
+          _realtyTabRefreshKey++;
         });
       } else {
         setState(() {
           _selectedTabIndex = targetTab;
         });
       }
+      // Animate to the target tab
+      _pageController.animateToPage(
+        targetTab,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
       // Reset the notifier
       InsuranceListPage._tabSwitchNotifier.value = null;
     }
+  }
+
+  void _onTabSelected(int index) {
+    setState(() {
+      _selectedTabIndex = index;
+    });
+    _pageController.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+  }
+
+  void _onPageChanged(int index) {
+    setState(() {
+      _selectedTabIndex = index;
+    });
   }
 
   @override
@@ -89,23 +141,28 @@ class _InsuranceListPageState extends State<InsuranceListPage> {
           ),
           _TabSection(
             selectedIndex: _selectedTabIndex,
-            onTabSelected: (index) {
-              setState(() {
-                _selectedTabIndex = index;
-              });
-            },
+            onTabSelected: _onTabSelected,
           ),
           const SizedBox(height: AppConstants.spacingM),
           Expanded(
-            child: _buildTabContent(),
+            child: PageView(
+              controller: _pageController,
+              onPageChanged: _onPageChanged,
+              children: [
+                _buildTabContent(0),
+                _buildTabContent(1),
+                _buildTabContent(2),
+                _buildTabContent(3),
+              ],
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildTabContent() {
-    switch (_selectedTabIndex) {
+  Widget _buildTabContent(int index) {
+    switch (index) {
       case 0: // My Insurances
         return BlocBuilder<InsuranceListCubit, InsuranceListState>(
           builder: (context, state) => _buildStateContent(context, state),
@@ -119,9 +176,17 @@ class _InsuranceListPageState extends State<InsuranceListPage> {
           child: const GarageListPage(),
         );
       case 2: // My Jewellery
-        return const _ComingSoonView(title: 'My Jewellery');
+        return BlocProvider(
+          key: ValueKey('jewellery_tab_$_jewelleryTabRefreshKey'),
+          create: (_) => sl<JewelleryListCubit>()..loadJewelleries(),
+          child: const JewelleryListPage(),
+        );
       case 3: // My Realty
-        return const _ComingSoonView(title: 'My Realty');
+        return BlocProvider(
+          key: ValueKey('realty_tab_$_realtyTabRefreshKey'),
+          create: (_) => sl<RealtyListCubit>()..loadRealties(),
+          child: const RealtyListPage(),
+        );
       default:
         return const _LoadingView();
     }
@@ -304,56 +369,3 @@ class _ContentView extends StatelessWidget {
   }
 }
 
-/// Coming soon view for tabs that are not yet implemented
-class _ComingSoonView extends StatelessWidget {
-  final String title;
-
-  const _ComingSoonView({required this.title});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(AppConstants.spacingXL),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.auto_awesome,
-              size: 64,
-              color: AppTheme.primaryGreen.withOpacity(0.6),
-            ),
-            const SizedBox(height: AppConstants.spacingL),
-            Text(
-              title,
-              style: GoogleFonts.montserrat(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: AppTheme.textPrimary,
-              ),
-            ),
-            const SizedBox(height: AppConstants.spacingM),
-            Text(
-              'Coming Soon',
-              style: GoogleFonts.montserrat(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: AppTheme.textSecondary,
-              ),
-            ),
-            const SizedBox(height: AppConstants.spacingS),
-            Text(
-              'This feature is under development.\nWe\'ll be launching it soon!',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.montserrat(
-                fontSize: 14,
-                color: AppTheme.textSecondary,
-                height: 1.5,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}

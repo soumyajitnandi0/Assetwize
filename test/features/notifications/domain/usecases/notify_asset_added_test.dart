@@ -29,13 +29,15 @@ void main() {
     await usecase(tAssetType, tAssetName);
 
     // assert
-    verify(mockRepository.addNotification(any)).called(1);
     final captured = verify(mockRepository.addNotification(captureAny)).captured;
-    final notification = captured.first as dynamic;
+    expect(captured.length, 1);
+    final notification = captured.first as NotificationEntity;
     expect(notification.title, 'New Asset Added');
     expect(notification.message, contains(tAssetType));
     expect(notification.message, contains(tAssetName));
     expect(notification.type, equals(NotificationType.assetAdded));
+    expect(notification.metadata?['assetType'], equals(tAssetType));
+    expect(notification.metadata?['assetName'], equals(tAssetName));
     verifyNoMoreInteractions(mockRepository);
   });
 
@@ -56,7 +58,7 @@ void main() {
   test('should throw StorageException when repository fails', () async {
     // arrange
     when(mockRepository.addNotification(any))
-        .thenThrow(StorageException('Failed to save'));
+        .thenThrow(const StorageException('Failed to save'));
 
     // act & assert
     expect(() => usecase(tAssetType, tAssetName), throwsA(isA<StorageException>()));

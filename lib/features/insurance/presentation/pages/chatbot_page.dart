@@ -8,20 +8,26 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/logger.dart' as logger;
 import '../../domain/entities/insurance.dart';
 import '../../../garage/domain/entities/garage.dart';
+import '../../../jewellery/domain/entities/jewellery.dart';
+import '../../../realty/domain/entities/realty.dart';
 
-/// Chatbot page for asking questions about insurance or garage/vehicles
+/// Chatbot page for asking questions about insurance, garage/vehicles, jewellery, or realty
 ///
 /// Provides an AI-powered chat interface using Groq API
-/// to answer questions about the user's insurance policy or vehicle.
+/// to answer questions about the user's assets.
 /// Follows conversation-based pattern with message history.
 class ChatbotPage extends StatefulWidget {
   final Insurance? insurance;
   final Garage? garage;
+  final Jewellery? jewellery;
+  final Realty? realty;
 
   const ChatbotPage({
     super.key,
     this.insurance,
     this.garage,
+    this.jewellery,
+    this.realty,
   });
 
   @override
@@ -55,7 +61,11 @@ class _ChatbotPageState extends State<ChatbotPage> {
   /// Generates a unique conversation ID
   String _generateConversationId() {
     final timestamp = DateTime.now().millisecondsSinceEpoch;
-    final assetId = widget.insurance?.id ?? widget.garage?.id ?? 'general';
+    final assetId = widget.insurance?.id ?? 
+                    widget.garage?.id ?? 
+                    widget.jewellery?.id ?? 
+                    widget.realty?.id ?? 
+                    'general';
     return 'conv_${assetId}_$timestamp';
   }
 
@@ -68,6 +78,10 @@ class _ChatbotPageState extends State<ChatbotPage> {
           ? '${widget.garage!.make ?? ''} ${widget.garage!.model ?? ''}'.trim()
           : widget.garage!.vehicleType;
       welcomeText = 'Hello! I\'m your vehicle assistant. I can help you with questions about your $vehicleName (${widget.garage!.registrationNumber}). What would you like to know?';
+    } else if (widget.jewellery != null) {
+      welcomeText = 'Hello! I\'m your jewellery assistant. I can help you with questions about your ${widget.jewellery!.displayName} (${widget.jewellery!.category}). What would you like to know?';
+    } else if (widget.realty != null) {
+      welcomeText = 'Hello! I\'m your property assistant. I can help you with questions about your ${widget.realty!.propertyType} at ${widget.realty!.address}. What would you like to know?';
     } else {
       welcomeText = 'Hello! I\'m your assistant. How can I help you today?';
     }
@@ -121,6 +135,34 @@ class _ChatbotPageState extends State<ChatbotPage> {
           'insuranceProvider': widget.garage!.insuranceProvider,
           'policyNumber': widget.garage!.policyNumber,
           'insuranceEndDate': widget.garage!.insuranceEndDate?.toIso8601String(),
+        };
+      } else if (widget.jewellery != null) {
+        assetContext = {
+          'category': widget.jewellery!.category,
+          'itemName': widget.jewellery!.itemName,
+          'description': widget.jewellery!.description,
+          'weight': widget.jewellery!.weight,
+          'purity': widget.jewellery!.purity,
+          'purchasePrice': widget.jewellery!.purchasePrice,
+          'currentValue': widget.jewellery!.currentValue,
+          'purchaseDate': widget.jewellery!.purchaseDate?.toIso8601String(),
+          'lastValuationDate': widget.jewellery!.lastValuationDate?.toIso8601String(),
+        };
+      } else if (widget.realty != null) {
+        assetContext = {
+          'propertyType': widget.realty!.propertyType,
+          'address': widget.realty!.address,
+          'city': widget.realty!.city,
+          'state': widget.realty!.state,
+          'zipCode': widget.realty!.zipCode,
+          'country': widget.realty!.country,
+          'area': widget.realty!.area,
+          'areaUnit': widget.realty!.areaUnit,
+          'purchasePrice': widget.realty!.purchasePrice,
+          'currentValue': widget.realty!.currentValue,
+          'purchaseDate': widget.realty!.purchaseDate?.toIso8601String(),
+          'lastValuationDate': widget.realty!.lastValuationDate?.toIso8601String(),
+          'propertyNumber': widget.realty!.propertyNumber,
         };
       }
 
@@ -201,7 +243,13 @@ class _ChatbotPageState extends State<ChatbotPage> {
             ),
             const SizedBox(width: 8),
             Text(
-              widget.garage != null ? 'Vehicle Assistant' : 'Insurance Assistant',
+              widget.garage != null
+                  ? 'Vehicle Assistant'
+                  : widget.jewellery != null
+                      ? 'Jewellery Assistant'
+                      : widget.realty != null
+                          ? 'Property Assistant'
+                          : 'Insurance Assistant',
               style: GoogleFonts.montserrat(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,

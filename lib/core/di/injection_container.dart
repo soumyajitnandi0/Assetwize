@@ -7,6 +7,22 @@ import '../../features/garage/domain/usecases/get_garages.dart';
 import '../../features/garage/presentation/bloc/garage_detail_cubit.dart';
 import '../../features/garage/presentation/bloc/garage_list_cubit.dart';
 import '../../features/garage/presentation/bloc/garage_selection_cubit.dart';
+import '../../features/jewellery/data/repositories/jewellery_repository_impl.dart';
+import '../../features/jewellery/domain/repositories/jewellery_repository.dart';
+import '../../features/jewellery/domain/usecases/add_jewellery.dart';
+import '../../features/jewellery/domain/usecases/get_jewellery_detail.dart';
+import '../../features/jewellery/domain/usecases/get_jewelleries.dart';
+import '../../features/jewellery/presentation/bloc/jewellery_detail_cubit.dart';
+import '../../features/jewellery/presentation/bloc/jewellery_list_cubit.dart';
+import '../../features/jewellery/presentation/bloc/jewellery_selection_cubit.dart';
+import '../../features/realty/data/repositories/realty_repository_impl.dart';
+import '../../features/realty/domain/repositories/realty_repository.dart';
+import '../../features/realty/domain/usecases/add_realty.dart';
+import '../../features/realty/domain/usecases/get_realty_detail.dart';
+import '../../features/realty/domain/usecases/get_realties.dart';
+import '../../features/realty/presentation/bloc/realty_detail_cubit.dart';
+import '../../features/realty/presentation/bloc/realty_list_cubit.dart';
+import '../../features/realty/presentation/bloc/realty_selection_cubit.dart';
 import '../../features/insurance/data/repositories/insurance_repository_impl.dart';
 import '../../features/insurance/domain/repositories/insurance_repository.dart';
 import '../../features/insurance/domain/usecases/add_insurance.dart';
@@ -16,7 +32,8 @@ import '../../features/insurance/domain/usecases/search_insurances.dart';
 import '../../features/insurance/presentation/bloc/insurance_list_cubit.dart';
 import '../../features/insurance/presentation/bloc/insurance_detail_cubit.dart';
 import '../../features/insurance/presentation/bloc/insurance_selection_cubit.dart';
-import '../../features/insurance/presentation/bloc/search_cubit.dart';
+import '../../features/search/domain/usecases/search_all_assets.dart';
+import '../../features/search/presentation/bloc/search_cubit.dart';
 import '../../features/notifications/data/repositories/notification_repository_impl.dart';
 import '../../features/notifications/domain/repositories/notification_repository.dart';
 import '../../features/notifications/domain/usecases/add_notification.dart';
@@ -76,6 +93,12 @@ Future<void> setupDependencyInjection() async {
   sl.registerLazySingleton<GarageRepository>(
     () => GarageRepositoryImpl(),
   );
+  sl.registerLazySingleton<JewelleryRepository>(
+    () => JewelleryRepositoryImpl(),
+  );
+  sl.registerLazySingleton<RealtyRepository>(
+    () => RealtyRepositoryImpl(),
+  );
   sl.registerLazySingleton<NotificationRepository>(
     () => NotificationRepositoryImpl(),
   );
@@ -95,10 +118,28 @@ Future<void> setupDependencyInjection() async {
   sl.registerLazySingleton(() => AddInsurance(sl()));
   sl.registerLazySingleton(() => SearchInsurances(sl()));
   
+  // Unified search use case (searches across all assets)
+  sl.registerLazySingleton(() => SearchAllAssets(
+    sl<InsuranceRepository>(),
+    sl<GarageRepository>(),
+    sl<JewelleryRepository>(),
+    sl<RealtyRepository>(),
+  ));
+  
   // Garage use cases
   sl.registerLazySingleton(() => GetGarages(sl()));
   sl.registerLazySingleton(() => GetGarageDetail(sl()));
   sl.registerLazySingleton(() => AddGarage(sl()));
+  
+  // Jewellery use cases
+  sl.registerLazySingleton(() => GetJewelleries(sl()));
+  sl.registerLazySingleton(() => GetJewelleryDetail(sl()));
+  sl.registerLazySingleton(() => AddJewellery(sl()));
+  
+  // Realty use cases
+  sl.registerLazySingleton(() => GetRealties(sl()));
+  sl.registerLazySingleton(() => GetRealtyDetail(sl()));
+  sl.registerLazySingleton(() => AddRealty(sl()));
   
   // Notification use cases
   sl.registerLazySingleton(() => GetNotifications(sl()));
@@ -134,8 +175,9 @@ Future<void> setupDependencyInjection() async {
   sl.registerFactory(
     () => InsuranceSelectionCubit(),
   );
+  // Unified search cubit (replaces insurance-specific search)
   sl.registerFactory(
-    () => SearchCubit(sl()),
+    () => SearchCubit(sl<SearchAllAssets>()),
   );
   sl.registerFactory(
     () => GarageListCubit(sl()),
@@ -145,6 +187,24 @@ Future<void> setupDependencyInjection() async {
   );
   sl.registerFactory(
     () => GarageSelectionCubit(),
+  );
+  sl.registerFactory(
+    () => JewelleryListCubit(sl()),
+  );
+  sl.registerFactory(
+    () => JewelleryDetailCubit(sl()),
+  );
+  sl.registerFactory(
+    () => JewellerySelectionCubit(),
+  );
+  sl.registerFactory(
+    () => RealtyListCubit(sl()),
+  );
+  sl.registerFactory(
+    () => RealtyDetailCubit(sl()),
+  );
+  sl.registerFactory(
+    () => RealtySelectionCubit(),
   );
   sl.registerFactory(
     () => NotificationsCubit(

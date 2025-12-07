@@ -46,7 +46,7 @@ void main() {
   test('should throw StorageException when repository fails', () async {
     // arrange
     when(mockRepository.isFirstLaunch())
-        .thenThrow(StorageException('Failed to check'));
+        .thenThrow(const StorageException('Failed to check'));
 
     // act & assert
     expect(() => usecase(), throwsA(isA<StorageException>()));

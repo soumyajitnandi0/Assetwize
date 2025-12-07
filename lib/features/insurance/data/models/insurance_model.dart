@@ -13,6 +13,7 @@ class InsuranceModel extends Insurance {
     required super.imageUrl,
     super.shortDescription,
     required super.type,
+    super.coverage,
     super.metadata,
   });
 
@@ -28,6 +29,7 @@ class InsuranceModel extends Insurance {
       imageUrl: json['imageUrl'] as String,
       shortDescription: json['shortDescription'] as String?,
       type: json['type'] as String,
+      coverage: json['coverage'] as String?,
       metadata: json['metadata'] as Map<String, dynamic>?,
     );
   }
@@ -44,6 +46,7 @@ class InsuranceModel extends Insurance {
       'imageUrl': imageUrl,
       'shortDescription': shortDescription,
       'type': type,
+      'coverage': coverage,
       'metadata': metadata,
     };
   }
@@ -60,6 +63,7 @@ class InsuranceModel extends Insurance {
       imageUrl: insurance.imageUrl,
       shortDescription: insurance.shortDescription,
       type: insurance.type,
+      coverage: insurance.coverage,
       metadata: insurance.metadata,
     );
   }

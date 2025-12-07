@@ -57,6 +57,7 @@ void main() async {
     // Continue anyway - some dependencies might still work
   }
 
+
   // Preload Montserrat font to ensure it's available on mobile
   // This ensures the font is downloaded and cached before the app renders
   try {

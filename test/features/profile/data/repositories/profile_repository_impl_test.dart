@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:assetwize/features/profile/data/repositories/profile_repository_impl.dart';
-import 'package:assetwize/features/profile/domain/entities/user_profile.dart';
 import 'package:assetwize/core/error/exceptions.dart';
 
 void main() {

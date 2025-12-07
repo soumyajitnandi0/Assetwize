@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
-import '../../domain/entities/insurance.dart';
+import '../../domain/entities/search_result.dart';
 
-/// Base class for search states
+/// States for unified search across all assets
 abstract class SearchState extends Equatable {
   const SearchState();
 
@@ -9,19 +9,19 @@ abstract class SearchState extends Equatable {
   List<Object?> get props => [];
 }
 
-/// Initial state when search page is first loaded
+/// Initial state - no search performed yet
 class SearchInitial extends SearchState {
   const SearchInitial();
 }
 
-/// State when search is in progress
+/// Loading state - search is in progress
 class SearchLoading extends SearchState {
   const SearchLoading();
 }
 
-/// State when search has completed successfully
+/// Loaded state - search completed with results
 class SearchLoaded extends SearchState {
-  final List<Insurance> results;
+  final List<SearchResult> results;
   final String query;
 
   const SearchLoaded({
@@ -33,7 +33,7 @@ class SearchLoaded extends SearchState {
   List<Object?> get props => [results, query];
 }
 
-/// State when search has no results
+/// Empty state - search completed but no results found
 class SearchEmpty extends SearchState {
   final String query;
 
@@ -43,7 +43,7 @@ class SearchEmpty extends SearchState {
   List<Object?> get props => [query];
 }
 
-/// State when search encounters an error
+/// Error state - search failed
 class SearchError extends SearchState {
   final String message;
 
@@ -52,5 +52,4 @@ class SearchError extends SearchState {
   @override
   List<Object?> get props => [message];
 }
-
 

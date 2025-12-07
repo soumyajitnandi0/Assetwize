@@ -175,6 +175,14 @@ class _InsuranceDetailPageState extends State<InsuranceDetailPage> {
                   'End Date',
                   dateFormat.format(insurance.endDate),
                 ),
+                if (insurance.coverage != null && insurance.coverage!.isNotEmpty) ...[
+                  const SizedBox(height: AppConstants.spacingM),
+                  _buildDetailRow(
+                    context,
+                    'Coverage',
+                    insurance.coverage!,
+                  ),
+                ],
                 const SizedBox(height: AppConstants.spacingL),
                 // Divider
                 const Divider(height: 1, thickness: 1, color: AppTheme.borderColor),

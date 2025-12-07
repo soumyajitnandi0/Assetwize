@@ -20,20 +20,17 @@ class NewInsuranceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(
-        horizontal: AppConstants.spacingL,
-        vertical: AppConstants.spacingS,
-      ),
+      margin: const EdgeInsets.symmetric(horizontal: AppConstants.spacingL),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.95),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(AppConstants.radiusXL),
         border: Border.all(
-          color: AppTheme.cardBorderLight,
-          width: 1.0,
+          color: AppTheme.borderColor,
+          width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withOpacity(0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -48,53 +45,47 @@ class NewInsuranceCard extends StatelessWidget {
             padding: const EdgeInsets.all(AppConstants.spacingL),
             child: Row(
               children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryGreen.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(AppConstants.radiusM),
+                  ),
+                  child: const Icon(
+                    Icons.add,
+                    color: AppTheme.primaryGreen,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: AppConstants.spacingM),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
                         'New Insurance',
                         style: GoogleFonts.montserrat(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
                           color: AppTheme.textPrimary,
-                          letterSpacing: -0.3,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Ask AI to help you better understand your insurance.',
+                        'Add your insurance policy',
                         style: GoogleFonts.montserrat(
                           fontSize: 14,
-                          fontWeight: FontWeight.w400,
                           color: AppTheme.textSecondary,
-                          height: 1.3,
                         ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(width: AppConstants.spacingM),
-                Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.08),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: const Icon(
-                    Icons.arrow_forward_ios,
-                    size: 14,
-                    color: AppTheme.textSecondary,
-                  ),
+                const Icon(
+                  Icons.arrow_forward_ios,
+                  size: 16,
+                  color: AppTheme.textSecondary,
                 ),
               ],
             ),

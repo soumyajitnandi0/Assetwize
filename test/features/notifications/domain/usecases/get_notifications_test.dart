@@ -52,7 +52,7 @@ void main() {
   test('should throw StorageException when repository fails', () async {
     // arrange
     when(mockRepository.getNotifications())
-        .thenThrow(StorageException('Failed to fetch'));
+        .thenThrow(const StorageException('Failed to fetch'));
 
     // act & assert
     expect(() => usecase(), throwsA(isA<StorageException>()));

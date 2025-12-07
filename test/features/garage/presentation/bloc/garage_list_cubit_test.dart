@@ -23,14 +23,14 @@ void main() {
     cubit.close();
   });
 
-  final tGarage1 = Garage(
+  const tGarage1 = Garage(
     id: '1',
     vehicleType: 'Car',
     registrationNumber: 'ABC123',
     imageUrl: 'assets/images/car_insurance.png',
   );
 
-  final tGarage2 = Garage(
+  const tGarage2 = Garage(
     id: '2',
     vehicleType: 'Bike',
     registrationNumber: 'XYZ789',

@@ -175,34 +175,118 @@ class GroqChatService {
     logger.Logger.info('GroqChatService: Cleared conversation $conversationId');
   }
 
-  /// Builds the system prompt with insurance context
+  /// Builds the system prompt with asset context (insurance, garage, or jewellery)
   String _buildSystemPrompt(Map<String, dynamic>? insuranceContext) {
-    String prompt = '''You are a helpful insurance assistant for ASSETWIZE, an asset management application. 
-Your role is to help users understand their insurance policies, answer questions about coverage, 
-claims, renewals, and provide general insurance guidance.
+    String prompt = '''You are a helpful assistant for ASSETWIZE, an asset management application. 
+Your role is to help users understand and manage their assets including insurance policies, vehicles, and jewellery.
 
 Be concise, friendly, and professional in your responses.
-If you don't know something, admit it and suggest contacting the insurance provider directly.''';
+If you don't know something, admit it and suggest contacting the relevant provider or expert directly.''';
 
     if (insuranceContext != null) {
-      prompt += '\n\nCurrent Insurance Policy Context:';
-      if (insuranceContext['title'] != null) {
-        prompt += '\n- Policy Type: ${insuranceContext['title']}';
-      }
-      if (insuranceContext['provider'] != null) {
-        prompt += '\n- Insurance Provider: ${insuranceContext['provider']}';
-      }
-      if (insuranceContext['policyNumber'] != null) {
-        prompt += '\n- Policy Number: ${insuranceContext['policyNumber']}';
-      }
-      if (insuranceContext['type'] != null) {
-        prompt += '\n- Insurance Type: ${insuranceContext['type']}';
-      }
-      if (insuranceContext['endDate'] != null) {
-        prompt += '\n- Policy End Date: ${insuranceContext['endDate']}';
-      }
-      if (insuranceContext['shortDescription'] != null) {
-        prompt += '\n- Description: ${insuranceContext['shortDescription']}';
+      // Determine asset type based on context keys
+      if (insuranceContext['title'] != null || insuranceContext['provider'] != null) {
+        // Insurance context
+        prompt += '\n\nCurrent Insurance Policy Context:';
+        if (insuranceContext['title'] != null) {
+          prompt += '\n- Policy Type: ${insuranceContext['title']}';
+        }
+        if (insuranceContext['provider'] != null) {
+          prompt += '\n- Insurance Provider: ${insuranceContext['provider']}';
+        }
+        if (insuranceContext['policyNumber'] != null) {
+          prompt += '\n- Policy Number: ${insuranceContext['policyNumber']}';
+        }
+        if (insuranceContext['type'] != null) {
+          prompt += '\n- Insurance Type: ${insuranceContext['type']}';
+        }
+        if (insuranceContext['endDate'] != null) {
+          prompt += '\n- Policy End Date: ${insuranceContext['endDate']}';
+        }
+        if (insuranceContext['shortDescription'] != null) {
+          prompt += '\n- Description: ${insuranceContext['shortDescription']}';
+        }
+      } else if (insuranceContext['vehicleType'] != null || insuranceContext['registrationNumber'] != null) {
+        // Garage/Vehicle context
+        prompt += '\n\nCurrent Vehicle Context:';
+        if (insuranceContext['vehicleType'] != null) {
+          prompt += '\n- Vehicle Type: ${insuranceContext['vehicleType']}';
+        }
+        if (insuranceContext['registrationNumber'] != null) {
+          prompt += '\n- Registration Number: ${insuranceContext['registrationNumber']}';
+        }
+        if (insuranceContext['make'] != null) {
+          prompt += '\n- Make: ${insuranceContext['make']}';
+        }
+        if (insuranceContext['model'] != null) {
+          prompt += '\n- Model: ${insuranceContext['model']}';
+        }
+        if (insuranceContext['year'] != null) {
+          prompt += '\n- Year: ${insuranceContext['year']}';
+        }
+        if (insuranceContext['color'] != null) {
+          prompt += '\n- Color: ${insuranceContext['color']}';
+        }
+        if (insuranceContext['insuranceProvider'] != null) {
+          prompt += '\n- Insurance Provider: ${insuranceContext['insuranceProvider']}';
+        }
+        if (insuranceContext['insuranceEndDate'] != null) {
+          prompt += '\n- Insurance End Date: ${insuranceContext['insuranceEndDate']}';
+        }
+      } else if (insuranceContext['category'] != null || insuranceContext['itemName'] != null) {
+        // Jewellery context
+        prompt += '\n\nCurrent Jewellery Context:';
+        if (insuranceContext['category'] != null) {
+          prompt += '\n- Category: ${insuranceContext['category']}';
+        }
+        if (insuranceContext['itemName'] != null) {
+          prompt += '\n- Item Name: ${insuranceContext['itemName']}';
+        }
+        if (insuranceContext['description'] != null) {
+          prompt += '\n- Description: ${insuranceContext['description']}';
+        }
+        if (insuranceContext['weight'] != null) {
+          prompt += '\n- Weight: ${insuranceContext['weight']} grams';
+        }
+        if (insuranceContext['purity'] != null) {
+          prompt += '\n- Purity: ${insuranceContext['purity']}';
+        }
+        if (insuranceContext['purchasePrice'] != null) {
+          prompt += '\n- Purchase Price: ₹${insuranceContext['purchasePrice']}';
+        }
+        if (insuranceContext['currentValue'] != null) {
+          prompt += '\n- Current Value: ₹${insuranceContext['currentValue']}';
+        }
+        if (insuranceContext['lastValuationDate'] != null) {
+          prompt += '\n- Last Valuation Date: ${insuranceContext['lastValuationDate']}';
+        }
+      } else if (insuranceContext['propertyType'] != null || insuranceContext['address'] != null) {
+        // Realty context
+        prompt += '\n\nCurrent Property Context:';
+        if (insuranceContext['propertyType'] != null) {
+          prompt += '\n- Property Type: ${insuranceContext['propertyType']}';
+        }
+        if (insuranceContext['address'] != null) {
+          prompt += '\n- Address: ${insuranceContext['address']}';
+        }
+        if (insuranceContext['city'] != null) {
+          prompt += '\n- City: ${insuranceContext['city']}';
+        }
+        if (insuranceContext['state'] != null) {
+          prompt += '\n- State: ${insuranceContext['state']}';
+        }
+        if (insuranceContext['area'] != null) {
+          prompt += '\n- Area: ${insuranceContext['area']} ${insuranceContext['areaUnit'] ?? 'sqft'}';
+        }
+        if (insuranceContext['purchasePrice'] != null) {
+          prompt += '\n- Purchase Price: ₹${insuranceContext['purchasePrice']}';
+        }
+        if (insuranceContext['currentValue'] != null) {
+          prompt += '\n- Current Value: ₹${insuranceContext['currentValue']}';
+        }
+        if (insuranceContext['lastValuationDate'] != null) {
+          prompt += '\n- Last Valuation Date: ${insuranceContext['lastValuationDate']}';
+        }
       }
       prompt += '\n\nUse this context to provide relevant and personalized answers.';
     }

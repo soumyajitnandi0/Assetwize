@@ -5,16 +5,24 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../bloc/insurance_detail_cubit.dart';
+import '../../../insurance/presentation/pages/chatbot_page.dart';
+import '../../../insurance/presentation/pages/insurance_detail_page.dart';
+import '../../../insurance/presentation/bloc/insurance_detail_cubit.dart';
+import '../../../garage/presentation/pages/garage_detail_view_page.dart';
+import '../../../garage/presentation/bloc/garage_detail_cubit.dart';
+import '../../../jewellery/presentation/pages/jewellery_detail_view_page.dart';
+import '../../../jewellery/presentation/bloc/jewellery_detail_cubit.dart';
+import '../../../realty/presentation/pages/realty_detail_view_page.dart';
+import '../../../realty/presentation/bloc/realty_detail_cubit.dart';
+import '../../domain/entities/search_result.dart';
 import '../bloc/search_cubit.dart';
 import '../bloc/search_state.dart';
-import '../widgets/insurance_card.dart';
-import 'insurance_detail_page.dart';
+import '../widgets/search_result_card.dart';
 
-/// Search page for finding insurance policies
+/// Unified search page for finding assets across all types
 ///
-/// Allows users to search through their saved insurance policies
-/// by title, provider, policy number, type, or description.
+/// Allows users to search through their saved assets (Insurance, Garage, Jewellery, Realty)
+/// by various fields and displays results from all asset types.
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
 
@@ -37,10 +45,13 @@ class _SearchPageState extends State<SearchPage> {
     // Cancel previous timer
     _debounceTimer?.cancel();
 
-    // Create new timer for debouncing (300ms delay)
-    _debounceTimer = Timer(const Duration(milliseconds: 300), () {
-      context.read<SearchCubit>().search(query);
-    });
+    // Create new timer for debouncing
+    _debounceTimer = Timer(
+      const Duration(milliseconds: AppConstants.searchDebounceMs),
+      () {
+        context.read<SearchCubit>().search(query);
+      },
+    );
   }
 
   void _clearSearch() {
@@ -51,7 +62,7 @@ class _SearchPageState extends State<SearchPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: _buildAppBar(context),
       body: Column(
         children: [
@@ -76,7 +87,7 @@ class _SearchPageState extends State<SearchPage> {
           color: AppTheme.textPrimary,
         ),
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
       elevation: 0,
       automaticallyImplyLeading: false,
     );
@@ -89,7 +100,7 @@ class _SearchPageState extends State<SearchPage> {
         vertical: AppConstants.spacingM,
       ),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).scaffoldBackgroundColor,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -101,7 +112,7 @@ class _SearchPageState extends State<SearchPage> {
       child: TextField(
         controller: _searchController,
         decoration: InputDecoration(
-          hintText: 'Search by title, provider, policy number...',
+          hintText: 'Search all assets...',
           hintStyle: GoogleFonts.montserrat(
             color: AppTheme.textSecondary,
           ),
@@ -122,7 +133,9 @@ class _SearchPageState extends State<SearchPage> {
             },
           ),
           filled: true,
-          fillColor: AppTheme.backgroundLight,
+          fillColor: Theme.of(context).brightness == Brightness.dark
+              ? Colors.grey[850]
+              : AppTheme.backgroundLight,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(AppConstants.radiusXL),
             borderSide: BorderSide.none,
@@ -171,7 +184,7 @@ class _SearchPageState extends State<SearchPage> {
           ),
           const SizedBox(height: AppConstants.spacingS),
           Text(
-            'Search by title, provider, policy number, or type',
+            'Search across Insurances, Vehicles, Jewellery, and Properties',
             style: GoogleFonts.montserrat(
               fontSize: 14,
               color: AppTheme.textSecondary,
@@ -192,13 +205,13 @@ class _SearchPageState extends State<SearchPage> {
       padding: const EdgeInsets.all(AppConstants.spacingL),
       itemCount: results.length,
       itemBuilder: (context, index) {
-        final insurance = results[index];
+        final result = results[index];
         return Padding(
           padding: const EdgeInsets.only(bottom: AppConstants.spacingM),
-          child: InsuranceCard(
-            insurance: insurance,
-            onTap: () => _navigateToDetail(context, insurance.id),
-            onAskAssistant: () => _showAssistantSnackBar(context, insurance.title),
+          child: SearchResultCard(
+            result: result,
+            onTap: () => _navigateToDetail(context, result),
+            onAskAssistant: () => _navigateToChatbot(context, result),
           ),
         );
       },
@@ -293,25 +306,90 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
-  void _navigateToDetail(BuildContext context, String insuranceId) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => BlocProvider(
-          create: (_) => sl<InsuranceDetailCubit>(),
-          child: InsuranceDetailPage(insuranceId: insuranceId),
-        ),
-      ),
-    );
+  void _navigateToDetail(BuildContext context, result) {
+    switch (result.assetType) {
+      case AssetType.insurance:
+        final insurance = result.metadata!['insurance'];
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => BlocProvider(
+              create: (_) => sl<InsuranceDetailCubit>(),
+              child: InsuranceDetailPage(insuranceId: insurance.id),
+            ),
+          ),
+        );
+        break;
+      case AssetType.garage:
+        final garage = result.metadata!['garage'];
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => BlocProvider(
+              create: (_) => sl<GarageDetailCubit>(),
+              child: GarageDetailViewPage(garageId: garage.id),
+            ),
+          ),
+        );
+        break;
+      case AssetType.jewellery:
+        final jewellery = result.metadata!['jewellery'];
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => BlocProvider(
+              create: (_) => sl<JewelleryDetailCubit>(),
+              child: JewelleryDetailViewPage(jewelleryId: jewellery.id),
+            ),
+          ),
+        );
+        break;
+      case AssetType.realty:
+        final realty = result.metadata!['realty'];
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => BlocProvider(
+              create: (_) => sl<RealtyDetailCubit>(),
+              child: RealtyDetailViewPage(realtyId: realty.id),
+            ),
+          ),
+        );
+        break;
+    }
   }
 
-  void _showAssistantSnackBar(BuildContext context, String title) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Ask Assistant about $title'),
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 2),
-      ),
-    );
+  void _navigateToChatbot(BuildContext context, result) {
+    switch (result.assetType) {
+      case AssetType.insurance:
+        final insurance = result.metadata!['insurance'];
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => ChatbotPage(insurance: insurance),
+          ),
+        );
+        break;
+      case AssetType.garage:
+        final garage = result.metadata!['garage'];
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => ChatbotPage(garage: garage),
+          ),
+        );
+        break;
+      case AssetType.jewellery:
+        final jewellery = result.metadata!['jewellery'];
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => ChatbotPage(jewellery: jewellery),
+          ),
+        );
+        break;
+      case AssetType.realty:
+        final realty = result.metadata!['realty'];
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => ChatbotPage(realty: realty),
+          ),
+        );
+        break;
+    }
   }
 }
 

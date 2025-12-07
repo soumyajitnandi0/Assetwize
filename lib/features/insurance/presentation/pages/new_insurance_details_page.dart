@@ -35,6 +35,7 @@ class _NewInsuranceDetailsPageState extends State<NewInsuranceDetailsPage> {
   final _titleController = TextEditingController();
   final _providerController = TextEditingController();
   final _policyNumberController = TextEditingController();
+  final _coverageController = TextEditingController();
   final _descriptionController = TextEditingController();
 
   DateTime? _startDate;
@@ -47,6 +48,7 @@ class _NewInsuranceDetailsPageState extends State<NewInsuranceDetailsPage> {
     _titleController.dispose();
     _providerController.dispose();
     _policyNumberController.dispose();
+    _coverageController.dispose();
     _descriptionController.dispose();
     super.dispose();
   }
@@ -114,6 +116,9 @@ class _NewInsuranceDetailsPageState extends State<NewInsuranceDetailsPage> {
             ? null
             : _descriptionController.text.trim(),
         type: '${widget.category} - ${widget.type}',
+        coverage: _coverageController.text.trim().isEmpty
+            ? null
+            : _coverageController.text.trim(),
         metadata: {
           'category': widget.category,
           'type': widget.type,
@@ -250,6 +255,16 @@ class _NewInsuranceDetailsPageState extends State<NewInsuranceDetailsPage> {
                   }
                   return null;
                 },
+              ),
+              const SizedBox(height: AppConstants.spacingM),
+              // Coverage
+              TextFormField(
+                controller: _coverageController,
+                decoration: const InputDecoration(
+                  labelText: 'Coverage Amount',
+                  hintText: 'e.g., ₹5,00,000 or 500000',
+                ),
+                keyboardType: TextInputType.text,
               ),
               const SizedBox(height: AppConstants.spacingM),
               // Start Date

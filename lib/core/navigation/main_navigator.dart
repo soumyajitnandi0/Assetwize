@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/di/injection_container.dart';
-import '../../features/insurance/presentation/bloc/search_cubit.dart';
+import '../../features/search/presentation/bloc/search_cubit.dart';
 import '../../features/insurance/presentation/pages/insurance_list_page.dart';
-import '../../features/insurance/presentation/pages/search_page.dart';
+import '../../features/search/presentation/pages/search_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
 import '../theme/app_theme.dart';
 

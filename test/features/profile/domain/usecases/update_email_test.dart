@@ -53,7 +53,7 @@ void main() {
   test('should throw StorageException when repository fails', () async {
     // arrange
     when(mockRepository.updateEmail(any))
-        .thenThrow(StorageException('Failed to save'));
+        .thenThrow(const StorageException('Failed to save'));
 
     // act & assert
     expect(() => usecase(tEmail), throwsA(isA<StorageException>()));
