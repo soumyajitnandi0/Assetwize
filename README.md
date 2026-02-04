@@ -478,29 +478,6 @@ assetwize/
 └── README.md                   # This file
 ```
 
-## 🐛 Troubleshooting
-
-### App won't start
-- Check if `.env` file exists
-- Verify `GROQ_API_KEY` is set in `.env`
-- Run `flutter pub get`
-- Try `flutter clean && flutter pub get`
-
-### Chatbot not working
-- Verify `GROQ_API_KEY` is correct in `.env`
-- Check internet connection
-- Check Groq API status
-
-### Images not loading
-- Verify image files exist in `assets/images/`
-- Check image file names match insurance types
-- Run `flutter pub get` to refresh assets
-
-### Tests failing
-- Run `flutter pub run build_runner build --delete-conflicting-outputs`
-- Ensure all dependencies are installed
-- Check test files are up to date
-
 ## 📝 License
 
 This project is private and proprietary.
