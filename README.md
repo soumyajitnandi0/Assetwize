@@ -20,7 +20,7 @@ ASSETWIZE is a comprehensive asset management application that helps users organ
 - **Expiry Status**: Visual indicators for expiring insurance (within 30 days)
 
 #### My Garage
-- **Vehicle Management**: Track cars and bikes with complete details
+- **Vehicle Management**: Track cars and bikes with complete details.
 - **Vehicle Information**: Registration number, make, model, year, color
 - **Insurance Information**: Store insurance provider, policy number, and dates (displayed on vehicle cards)
 - **Vehicle Cards**: Beautiful cards with vehicle images and details
